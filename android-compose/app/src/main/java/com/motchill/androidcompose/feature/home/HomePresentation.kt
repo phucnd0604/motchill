@@ -12,14 +12,11 @@ data class HomeUiState(
 ) {
     val heroMovies: List<MovieCard>
         get() {
-            val slideSection = slideSection(sections)
-            val slideMovies = slideSection?.products.orEmpty()
-            if (slideMovies.isNotEmpty()) return slideMovies
-            return contentSections(sections).flatMap { it.products }
+            return sections.flatMap { it.products }
         }
 
     val contentSections: List<HomeSection>
-        get() = contentSections(sections)
+        get() = sections
 
     val selectedMovie: MovieCard?
         get() {
@@ -36,7 +33,7 @@ data class HomeUiState(
         }
 
     val isEmpty: Boolean
-        get() = heroMovies.isEmpty() && contentSections.isEmpty()
+        get() = heroMovies.isEmpty() && sections.isEmpty()
 }
 
 internal fun slideSection(sections: List<HomeSection>): HomeSection? {
@@ -47,7 +44,7 @@ internal fun slideSection(sections: List<HomeSection>): HomeSection? {
 }
 
 internal fun contentSections(sections: List<HomeSection>): List<HomeSection> {
-    return sections.filterNot { it.key == "slide" }
+    return sections
 }
 
 internal fun sectionSearchSlug(section: HomeSection): String {

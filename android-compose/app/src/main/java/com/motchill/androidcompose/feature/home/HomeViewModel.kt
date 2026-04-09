@@ -34,14 +34,12 @@ internal class HomeViewModel(
                     val popupDeferred = async { repository.loadPopupAd() }
                     val sections = sectionsDeferred.await()
                     val popupAd = popupDeferred.await()
-                    val heroMovies = heroMoviesFromSections(sections)
-                    val selectedIndex = if (heroMovies.isEmpty()) 0 else 0
                     _uiState.value = HomeUiState(
                         isLoading = false,
                         errorMessage = null,
                         sections = sections,
                         popupAdTitle = popupAd?.name?.trim().orEmpty().ifBlank { null },
-                        selectedHeroIndex = selectedIndex,
+                        selectedHeroIndex = 0,
                     )
                 }
             }.onFailure { error ->
@@ -59,10 +57,6 @@ internal class HomeViewModel(
         if (nextIndex == -1) return
         _uiState.value = _uiState.value.copy(selectedHeroIndex = nextIndex)
     }
-
-    private fun heroMoviesFromSections(sections: List<com.motchill.androidcompose.domain.model.HomeSection>) =
-        slideSection(sections)?.products?.takeIf { it.isNotEmpty() }
-            ?: contentSections(sections).flatMap { it.products }
 
     companion object {
         fun factory(repository: MotchillRepository): ViewModelProvider.Factory {

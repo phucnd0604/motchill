@@ -3,7 +3,6 @@ package com.motchill.androidcompose.feature.home
 import com.motchill.androidcompose.domain.model.HomeSection
 import com.motchill.androidcompose.domain.model.MovieCard
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HomePresentationTest {
@@ -18,13 +17,13 @@ class HomePresentationTest {
     }
 
     @Test
-    fun `content sections exclude slide key only`() {
+    fun `content sections keep slide key`() {
         val sections = listOf(
             section(key = "slide", title = "Hero"),
             section(key = "drama", title = "Drama"),
         )
 
-        assertEquals(listOf("drama"), contentSections(sections).map { it.key })
+        assertEquals(listOf("slide", "drama"), contentSections(sections).map { it.key })
     }
 
     @Test
@@ -37,19 +36,19 @@ class HomePresentationTest {
     }
 
     @Test
-    fun `home ui state derives hero movies from slide section`() {
-        val slideMovie = movie(id = 1)
+    fun `home ui state derives movies from all sections`() {
+        val firstMovie = movie(id = 1)
         val otherMovie = movie(id = 2)
         val state = HomeUiState(
             sections = listOf(
-                section(key = "slide", title = "Hero", movies = listOf(slideMovie)),
+                section(key = "slide", title = "Hero", movies = listOf(firstMovie)),
                 section(key = "drama", title = "Drama", movies = listOf(otherMovie)),
             ),
         )
 
-        assertEquals(listOf(slideMovie), state.heroMovies)
-        assertEquals(slideMovie, state.selectedMovie)
-        assertTrue(state.previewMovies.isEmpty())
+        assertEquals(listOf(firstMovie, otherMovie), state.heroMovies)
+        assertEquals(firstMovie, state.selectedMovie)
+        assertEquals(listOf(otherMovie), state.previewMovies)
     }
 
     private fun section(

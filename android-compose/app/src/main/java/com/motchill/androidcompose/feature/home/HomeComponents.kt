@@ -4,20 +4,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -93,25 +98,20 @@ private fun HomeContent(
 ) {
     val selectedMovie = uiState.selectedMovie ?: return
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(22.dp),
-    ) {
-        item {
-            HomeHeroSection(
-                selectedMovie = selectedMovie,
-                previewMovies = uiState.previewMovies,
-                onSelectMovie = onSelectHeroMovie,
-                onTapFavorite = onTapFavorite,
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        if (maxWidth < 900.dp) {
+            HomeStackContent(
+                uiState = uiState,
                 onTapSearch = onTapSearch,
                 onOpenMovie = onOpenMovie,
+                onOpenSection = onOpenSection,
             )
-        }
-
-        items(uiState.contentSections) { section ->
-            HomeSectionRail(
-                section = section,
+        } else {
+            HomeSplitContent(
+                uiState = uiState,
+                selectedMovie = selectedMovie,
+                onSelectHeroMovie = onSelectHeroMovie,
+                onTapSearch = onTapSearch,
                 onOpenMovie = onOpenMovie,
                 onOpenSection = onOpenSection,
             )
@@ -120,202 +120,105 @@ private fun HomeContent(
 }
 
 @Composable
-private fun HomeHeroSection(
-    selectedMovie: MovieCard,
-    previewMovies: List<MovieCard>,
-    onSelectMovie: (Int) -> Unit,
-    onTapFavorite: () -> Unit,
+private fun HomeStackContent(
+    uiState: HomeUiState,
     onTapSearch: () -> Unit,
     onOpenMovie: (String) -> Unit,
+    onOpenSection: (String, String) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            HomeActionButton(
-                text = "Favorite",
-                icon = Icons.Outlined.FavoriteBorder,
-                filled = true,
-                modifier = Modifier.weight(1f),
-                onClick = onTapFavorite,
-            )
-            HomeActionButton(
-                text = "Tìm kiếm",
-                icon = Icons.Outlined.Search,
-                filled = false,
-                modifier = Modifier.weight(1f),
-                onClick = onTapSearch,
-            )
-        }
-
-        HomeHeroCard(
-            selectedMovie = selectedMovie,
-            onTapSearch = onTapSearch,
-            onOpenMovie = onOpenMovie,
-        )
-
-        HomePreviewStrip(
-            previewMovies = previewMovies,
-            onSelectMovie = onSelectMovie,
-        )
-    }
-}
-
-@Composable
-private fun HomeHeroCard(
-    selectedMovie: MovieCard,
-    onTapSearch: () -> Unit,
-    onOpenMovie: (String) -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(280.dp)
-            .background(
-                color = Color(0xFF1A1A1A),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-            ),
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
-        MotchillRemoteImage(
-            url = selectedMovie.displayBanner,
-            modifier = Modifier.fillMaxSize(),
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.22f)),
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF131313).copy(alpha = 0.96f),
-                            Color(0xFF131313).copy(alpha = 0.80f),
-                            Color(0xFF131313).copy(alpha = 0.14f),
-                        ),
-                    ),
-                ),
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "CINEMATIC CHOICE",
-                color = Color(0xFFE50914),
-                fontSize = 20.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
-                letterSpacing = 1.2.sp,
-            )
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxWidth(0.9f),
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text(
-                    text = selectedMovie.displayTitle,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.White,
-                    fontSize = 34.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
-                    lineHeight = 32.sp,
-                    letterSpacing = (-0.6).sp,
-                )
-                Text(
-                    text = selectedMovie.displaySubtitle.ifBlank { selectedMovie.statusTitle },
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.White.copy(alpha = 0.70f),
-                    fontSize = 13.sp,
-                    lineHeight = 19.sp,
-                )
-
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 HomeActionButton(
-                    text = "Xem ngay",
-                    icon = Icons.Outlined.PlayArrow,
-                    filled = true,
-                    onClick = { onOpenMovie(selectedMovie.link) },
-                    modifier = Modifier.width(130.dp),
+                    text = "Tìm kiếm",
+                    icon = Icons.Outlined.Search,
+                    filled = false,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onTapSearch,
                 )
             }
         }
-    }
-}
 
-@Composable
-private fun HomePreviewStrip(
-    previewMovies: List<MovieCard>,
-    onSelectMovie: (Int) -> Unit,
-) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(end = 2.dp)) {
-        items(previewMovies, key = { it.id }) { movie ->
-            HomePreviewCard(
-                movie = movie,
-                onClick = { onSelectMovie(movie.id) },
+        items(uiState.contentSections) { section ->
+            HomeSectionRail(
+                section = section,
+                selectedMovieId = null,
+                onMovieClick = { movie -> onOpenMovie(movie.link) },
+                onOpenSection = onOpenSection,
             )
         }
     }
 }
 
 @Composable
-private fun HomePreviewCard(
-    movie: MovieCard,
-    onClick: () -> Unit,
+private fun HomeSplitContent(
+    uiState: HomeUiState,
+    selectedMovie: MovieCard,
+    onSelectHeroMovie: (Int) -> Unit,
+    onTapSearch: () -> Unit,
+    onOpenMovie: (String) -> Unit,
+    onOpenSection: (String, String) -> Unit,
 ) {
-    MotchillFocusCard(
+    Row(
         modifier = Modifier
-            .width(104.dp)
-            .height(138.dp),
-        onClick = onClick,
-        borderRadius = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
-        focusedBorderColor = Color(0xFFFFD15C),
+            .fillMaxSize()
+            .padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                MotchillRemoteImage(
-                    url = movie.displayPoster,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Black.copy(alpha = 0.45f),
-                                    Color.Transparent,
-                                ),
-                            ),
-                        ),
-                )
-                if (movie.rating.isNotBlank()) {
-                    HomeRatingBadge(
-                        text = movie.rating,
-                        modifier = Modifier
-                            .padding(start = 8.dp, top = 8.dp)
-                            .align(Alignment.TopStart),
+        LazyColumn(
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            verticalArrangement = Arrangement.spacedBy(22.dp),
+            contentPadding = PaddingValues(end = 4.dp),
+        ) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    HomeActionButton(
+                        text = "Tìm kiếm",
+                        icon = Icons.Outlined.Search,
+                        filled = false,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = onTapSearch,
                     )
                 }
             }
+
+            items(uiState.contentSections) { section ->
+                HomeSectionRail(
+                    section = section,
+                    selectedMovieId = selectedMovie.id,
+                    onMovieClick = { movie -> onSelectHeroMovie(movie.id) },
+                    onOpenSection = onOpenSection,
+                )
+            }
         }
+
+        HomeSpotlightPanel(
+            modifier = Modifier
+                .weight(0.95f)
+                .fillMaxHeight()
+                .widthIn(max = 560.dp),
+            selectedMovie = selectedMovie,
+            onOpenMovie = onOpenMovie,
+            onTapSearch = onTapSearch,
+        )
     }
 }
 
 @Composable
 private fun HomeSectionRail(
     section: HomeSection,
-    onOpenMovie: (String) -> Unit,
+    selectedMovieId: Int?,
+    onMovieClick: (MovieCard) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
     val products = section.products
@@ -331,7 +234,7 @@ private fun HomeSectionRail(
                 modifier = Modifier.weight(1f),
                 color = Color.White,
                 fontSize = 18.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+                fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.2).sp,
             )
             HomeTextButton(
@@ -344,7 +247,8 @@ private fun HomeSectionRail(
             items(products, key = { it.id }) { movie ->
                 HomeSectionCard(
                     movie = movie,
-                    onClick = { onOpenMovie(movie.link) },
+                    selected = movie.id == selectedMovieId,
+                    onClick = { onMovieClick(movie) },
                 )
             }
         }
@@ -354,6 +258,7 @@ private fun HomeSectionRail(
 @Composable
 private fun HomeSectionCard(
     movie: MovieCard,
+    selected: Boolean,
     onClick: () -> Unit,
 ) {
     Column(
@@ -365,8 +270,8 @@ private fun HomeSectionCard(
                 .fillMaxWidth()
                 .height(226.dp),
             onClick = onClick,
-            borderRadius = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
-            focusedBorderColor = Color(0xFFFFD15C),
+            borderRadius = RoundedCornerShape(18.dp),
+            focusedBorderColor = if (selected) Color(0xFFE50914) else Color(0xFFFFD15C),
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 MotchillRemoteImage(
@@ -385,6 +290,13 @@ private fun HomeSectionCard(
                             ),
                         ),
                 )
+                if (selected) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFE50914).copy(alpha = 0.10f)),
+                    )
+                }
                 if (movie.rating.isNotBlank()) {
                     HomeRatingBadge(
                         text = movie.rating,
@@ -400,36 +312,149 @@ private fun HomeSectionCard(
             overflow = TextOverflow.Ellipsis,
             color = Color.White,
             fontSize = 13.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            fontWeight = FontWeight.Bold,
         )
         Text(
             text = movie.displaySubtitle.ifBlank { movie.statusTitle },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            color = Color.White.copy(alpha = 0.60f),
+            color = if (selected) Color(0xFFFFD15C) else Color.White.copy(alpha = 0.60f),
             fontSize = 11.sp,
         )
     }
 }
 
 @Composable
-private fun HomeRatingBadge(
-    text: String,
+private fun HomeSpotlightPanel(
     modifier: Modifier = Modifier,
+    selectedMovie: MovieCard,
+    onOpenMovie: (String) -> Unit,
+    onTapSearch: () -> Unit,
 ) {
-    Box(
+    LazyColumn(
         modifier = modifier
-            .background(
-                color = Color.Black.copy(alpha = 0.72f),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(999.dp),
+            .clip(RoundedCornerShape(28.dp))
+            .background(Color(0xFF0F0F0F)),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(420.dp)
+                    .background(
+                        color = Color(0xFF141414),
+                        shape = RoundedCornerShape(28.dp),
+                    ),
+            ) {
+                MotchillRemoteImage(
+                    url = selectedMovie.displayBanner,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.28f)),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF090909).copy(alpha = 0.95f),
+                                    Color(0xFF090909).copy(alpha = 0.80f),
+                                    Color.Transparent,
+                                ),
+                            ),
+                        ),
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "SPOTLIGHT",
+                        color = Color(0xFFE50914),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.2.sp,
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth(0.86f)) {
+                        Text(
+                            text = selectedMovie.displayTitle,
+                            color = Color.White,
+                            fontSize = 34.sp,
+                            lineHeight = 34.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = selectedMovie.displaySubtitle.ifBlank { selectedMovie.statusTitle },
+                            color = Color.White.copy(alpha = 0.74f),
+                            fontSize = 13.sp,
+                            lineHeight = 20.sp,
+                            maxLines = 4,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                HomeMetaPill(selectedMovie.year.takeIf { it > 0 }?.toString())
+                HomeMetaPill(selectedMovie.rating.takeIf { it.isNotBlank() })
+                HomeMetaPill(selectedMovie.statusTitle.takeIf { it.isNotBlank() })
+                HomeMetaPill(selectedMovie.quantity.takeIf { it.isNotBlank() })
+            }
+        }
+
+        item {
+            Text(
+                text = selectedMovie.description.ifBlank { selectedMovie.moreInfo }.ifBlank { selectedMovie.displaySubtitle },
+                color = Color.White.copy(alpha = 0.72f),
+                fontSize = 14.sp,
+                lineHeight = 22.sp,
+                maxLines = 7,
+                overflow = TextOverflow.Ellipsis,
             )
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+        }
+
+        item {
+            HomeActionButton(
+                text = "Xem phim",
+                icon = Icons.Outlined.PlayArrow,
+                filled = true,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onOpenMovie(selectedMovie.link) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeMetaPill(text: String?) {
+    val value = text?.trim().orEmpty()
+    if (value.isBlank()) return
+    Box(
+        modifier = Modifier
+            .background(Color.White.copy(alpha = 0.06f), RoundedCornerShape(999.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(999.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
     ) {
         Text(
-            text = text,
+            text = value,
             color = Color.White,
-            fontSize = 10.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }
@@ -477,7 +502,7 @@ private fun HomeActionButton(
     MotchillFocusCard(
         modifier = modifier.height(48.dp),
         onClick = onClick,
-        borderRadius = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+        borderRadius = RoundedCornerShape(14.dp),
         focusedBorderColor = if (filled) Color(0xFFE50914) else Color(0xFFFFD15C),
         focusScale = 1.02f,
     ) {
@@ -490,12 +515,12 @@ private fun HomeActionButton(
                     } else {
                         Color(0xFF1A1A1A)
                     },
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(14.dp),
                 )
                 .border(
                     width = 1.dp,
                     color = if (filled) Color(0xFFB9131C) else Color.White.copy(alpha = 0.12f),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(14.dp),
                 ),
         ) {
             Row(
@@ -515,7 +540,7 @@ private fun HomeActionButton(
                     text = text,
                     color = Color.White,
                     fontSize = 14.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    fontWeight = FontWeight.SemiBold,
                 )
             }
         }
@@ -529,14 +554,14 @@ private fun HomeTextButton(
 ) {
     MotchillFocusCard(
         onClick = onClick,
-        borderRadius = androidx.compose.foundation.shape.RoundedCornerShape(999.dp),
+        borderRadius = RoundedCornerShape(999.dp),
         focusedBorderColor = Color(0xFFFFD15C),
         focusScale = 1.02f,
     ) {
         Box(
             modifier = Modifier.background(
                 color = Color.White.copy(alpha = 0.04f),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(999.dp),
+                shape = RoundedCornerShape(999.dp),
             ),
         ) {
             Text(
@@ -544,9 +569,31 @@ private fun HomeTextButton(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                 color = Color.White,
                 fontSize = 13.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                fontWeight = FontWeight.SemiBold,
             )
         }
+    }
+}
+
+@Composable
+private fun HomeRatingBadge(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .background(
+                color = Color.Black.copy(alpha = 0.72f),
+                shape = RoundedCornerShape(999.dp),
+            )
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 
