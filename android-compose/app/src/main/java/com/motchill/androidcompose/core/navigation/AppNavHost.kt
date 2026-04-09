@@ -8,10 +8,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import com.motchill.androidcompose.feature.detail.DetailScreen
 import com.motchill.androidcompose.feature.home.HomeRoute
 import com.motchill.androidcompose.feature.player.PlayerScreen
-import com.motchill.androidcompose.feature.search.SearchScreen
+import com.motchill.androidcompose.feature.search.SearchRoute
 
 @Composable
 fun AppNavHost() {
@@ -22,29 +26,39 @@ fun AppNavHost() {
         modifier = androidx.compose.ui.Modifier.fillMaxSize(),
     ) {
         composable(AppDestination.Home.route) {
-            HomeRoute(
-                onOpenSearch = { navController.navigate(AppRoutes.search()) },
-                onOpenFavorite = {
-                    navController.navigate(AppRoutes.search(likedOnly = true))
-                },
-                onOpenDetail = { slug ->
-                    if (slug.isNotBlank()) {
-                        navController.navigate(AppRoutes.detail(slug))
-                    }
-                },
-                onOpenSection = { slug ->
-                    if (slug.isBlank()) {
-                        navController.navigate(AppRoutes.search())
-                    } else {
-                        navController.navigate(AppRoutes.search(slug = slug))
-                    }
-                },
-            )
+            AppSafeDrawingScreen {
+                HomeRoute(
+                    onOpenSearch = { navController.navigate(AppRoutes.search()) },
+                    onOpenFavorite = {
+                        navController.navigate(AppRoutes.search(likedOnly = true))
+                    },
+                    onOpenDetail = { slug ->
+                        if (slug.isNotBlank()) {
+                            navController.navigate(AppRoutes.detail(slug))
+                        }
+                    },
+                    onOpenSection = { slug, label ->
+                        if (slug.isBlank()) {
+                            navController.navigate(AppRoutes.search())
+                        } else {
+                            navController.navigate(AppRoutes.search(slug = slug, label = label))
+                        }
+                    },
+                )
+            }
         }
         composable(
-            route = "search?slug={slug}&likedOnly={likedOnly}",
+            route = AppDestination.Search.route,
             arguments = listOf(
+                navArgument("q") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
                 navArgument("slug") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("label") {
                     type = NavType.StringType
                     defaultValue = ""
                 },
@@ -52,33 +66,57 @@ fun AppNavHost() {
                     type = NavType.BoolType
                     defaultValue = false
                 },
+                navArgument("favorite") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                },
+                navArgument("mode") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
             ),
-        ) { SearchScreen() }
-        composable(AppDestination.Category.route) { SearchScreen() }
+        ) { entry ->
+            AppSafeDrawingScreen {
+                SearchRoute(
+                    initialQuery = entry.requireStringArg("q"),
+                    presetSlug = entry.requireStringArg("slug"),
+                    initialLabel = entry.requireStringArg("label"),
+                    startLikedOnly = entry.requireBoolArg("likedOnly") ||
+                        entry.requireBoolArg("favorite") ||
+                        entry.requireStringArg("mode").equals("favorite", ignoreCase = true),
+                    onBack = { navController.popBackStack() },
+                    onOpenDetail = { slug ->
+                        if (slug.isNotBlank()) navController.navigate(AppRoutes.detail(slug))
+                    },
+                )
+            }
+        }
         composable(
             route = AppDestination.Detail.route,
             arguments = listOf(
                 navArgument("slug") { type = NavType.StringType },
             ),
         ) { entry ->
-            DetailScreen(
-                slug = entry.requireStringArg("slug"),
-                onBack = { navController.popBackStack() },
-                onOpenSearch = { navController.navigate(AppRoutes.search()) },
-                onOpenDetail = { slug ->
-                    if (slug.isNotBlank()) navController.navigate(AppRoutes.detail(slug))
-                },
-                onOpenEpisode = { movieId, episodeId, movieTitle, episodeLabel ->
-                    navController.navigate(
-                        AppRoutes.play(
-                            movieId = movieId,
-                            episodeId = episodeId,
-                            movieTitle = movieTitle,
-                            episodeLabel = episodeLabel,
-                        ),
-                    )
-                },
-            )
+            AppSafeDrawingScreen {
+                DetailScreen(
+                    slug = entry.requireStringArg("slug"),
+                    onBack = { navController.popBackStack() },
+                    onOpenSearch = { navController.navigate(AppRoutes.search()) },
+                    onOpenDetail = { slug ->
+                        if (slug.isNotBlank()) navController.navigate(AppRoutes.detail(slug))
+                    },
+                    onOpenEpisode = { movieId, episodeId, movieTitle, episodeLabel ->
+                        navController.navigate(
+                            AppRoutes.play(
+                                movieId = movieId,
+                                episodeId = episodeId,
+                                movieTitle = movieTitle,
+                                episodeLabel = episodeLabel,
+                            ),
+                        )
+                    },
+                )
+            }
         }
         composable(
             route = "play/{movieId}/{episodeId}?movieTitle={movieTitle}&episodeLabel={episodeLabel}",
@@ -106,10 +144,25 @@ fun AppNavHost() {
     }
 }
 
+@Composable
+private fun AppSafeDrawingScreen(content: @Composable () -> Unit) {
+    Box(
+        modifier = androidx.compose.ui.Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.safeDrawing),
+    ) {
+        content()
+    }
+}
+
 private fun NavBackStackEntry.requireStringArg(name: String): String {
     return arguments?.getString(name).orEmpty()
 }
 
 private fun NavBackStackEntry.requireIntArg(name: String): Int {
     return arguments?.getInt(name) ?: 0
+}
+
+private fun NavBackStackEntry.requireBoolArg(name: String): Boolean {
+    return arguments?.getBoolean(name) ?: false
 }

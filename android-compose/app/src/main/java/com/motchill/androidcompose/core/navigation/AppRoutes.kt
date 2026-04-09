@@ -16,7 +16,16 @@ object AppRoutes {
         }"
     }
 
-    fun search(slug: String = "", likedOnly: Boolean = false): String {
-        return "search?slug=${Uri.encode(slug)}&likedOnly=$likedOnly"
+    fun search(
+        q: String = "",
+        slug: String = "",
+        label: String = "",
+        likedOnly: Boolean = false,
+        favorite: Boolean = false,
+        mode: String = "",
+    ): String {
+        return "search?q=${Uri.encode(q)}&slug=${Uri.encode(slug)}&label=${
+            Uri.encode(label)
+        }&likedOnly=$likedOnly&favorite=$favorite&mode=${Uri.encode(mode)}"
     }
 }
