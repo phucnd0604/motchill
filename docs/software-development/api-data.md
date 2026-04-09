@@ -1,4 +1,4 @@
-# API, Dữ Liệu và Lưu Trữ
+# API, Data, and Storage
 
 ## 1. API Endpoints
 
@@ -13,17 +13,29 @@
 
 ## 2. Request Behavior
 
-- Base URL lấy từ `MOTCHILL_PUBLIC_API_BASE_URL`, mặc định là `https://motchilltv.taxi`.
-- Mỗi request dùng timeout 20 giây.
-- Header mặc định mô phỏng browser client nhẹ.
+- Base URL comes from `MOTCHILL_PUBLIC_API_BASE_URL`, defaulting to `https://motchilltv.taxi`.
+- Requests use a browser-like `User-Agent`.
+- Play payloads are encrypted and decoded locally before mapping into domain models.
 
-## 3. Encrypted Payloads
+## 3. Playback Payload Shape
 
-- Search results trả về payload đã mã hóa.
-- Play sources cũng trả về payload đã mã hóa.
-- Cipher dùng AES-CBC với header `Salted__` và passphrase cố định trong code hiện tại.
+The app currently treats `/api/play/get` as a source list response with these fields:
 
-Chi tiết về nguồn gốc passphrase và quy trình truy hồi khi upstream đổi key nằm trong [Giải mã payload và phục hồi key](security-decryption.md).
+- `SourceId`
+- `ServerName`
+- `Link`
+- `Subtitle`
+- `Type`
+- `IsFrame`
+- `Quality`
+- `Tracks`
+
+### Track Mapping Rules
+
+- `kind=audio` and similar audio hints are treated as audio tracks.
+- `kind=subtitle`, `sub`, `caption`, or `captions` are treated as subtitle tracks.
+- `Tracks` with `kind=captions` and `.vtt` files are subtitle metadata, not audio dubbing.
+- If `Subtitle` contains a subtitle file and no explicit subtitle track exists, it can be used as fallback subtitle metadata.
 
 ## 4. Data Models
 
@@ -54,20 +66,18 @@ Chi tiết về nguồn gốc passphrase và quy trình truy hồi khi upstream 
 
 ### Liked Movies
 
-- Key: `liked_movie_cards`
-- Key: `liked_movie_ids`
-- Store có thể giữ full snapshot `MovieCard` để search liked-only vẫn hiển thị khi API search trả rỗng.
+- `liked_movie_cards`
+- `liked_movie_ids`
 
 ### Playback Resume
 
-- Key format: `player_position:<movieId>:<episodeId>`
-- Lưu `Duration.inMilliseconds`
-- Dùng để resume vị trí phát cho từng episode riêng biệt
+- `player_position:<movieId>:<episodeId>`
+- Stores playback position per episode.
 
 ## 6. Business Rules
 
-- Search liked-only ưu tiên local cache thay vì API.
-- Category route `/category/:slug` được map sang preset filter.
-- Detail screen ưu tiên tab Episodes nếu có.
-- `displayBackdrop` của movie detail ưu tiên banner, rồi avatar, rồi fallback thumb.
-- `displayTitle` và `displaySubtitle` fallback an toàn để UI không bị trống.
+- Source `isFrame=true` is excluded from the native playable rail.
+- Native playback only shows stream sources.
+- Source choice defaults to the first playable stream source.
+- Audio/subtitle menu items appear only when the selected source exposes matching tracks.
+- The current native player keeps playback position and source selection local to the episode session.

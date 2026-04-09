@@ -1,5 +1,6 @@
 package com.motchill.androidcompose.data.repository
 
+import android.util.Log
 import com.motchill.androidcompose.core.network.MotchillApiClient
 import com.motchill.androidcompose.core.security.MotchillPlayCipher
 import com.motchill.androidcompose.domain.model.HomeSection
@@ -57,9 +58,85 @@ class DefaultMotchillRepository(
             episodeId = episodeId,
             server = server,
         )
-        return MotchillPlayCipher.decodeSources(payload)
+        Log.d(
+            TAG,
+            buildString {
+                append("loadEpisodeSources movieId=")
+                append(movieId)
+                append(" episodeId=")
+                append(episodeId)
+                append(" server=")
+                append(server)
+                append(" payloadLength=")
+                append(payload.length)
+                append(" payloadPreview=")
+                append(payload.take(80))
+            },
+        )
+        val sources = MotchillPlayCipher.decodeSources(payload)
+        Log.d(
+            TAG,
+            buildString {
+                append("decodedSources count=")
+                append(sources.size)
+                append(" items=")
+                append(
+                    sources.joinToString(separator = " | ") { source ->
+                        buildString {
+                            append("id=")
+                            append(source.sourceId)
+                            append(",frame=")
+                            append(source.isFrame)
+                            append(",quality=")
+                            append(source.quality)
+                            append(",server=")
+                            append(source.serverName)
+                            append(",subtitleField=")
+                            append(source.subtitle)
+                            append(",tracks=")
+                            append(source.tracks.size)
+                            append(",audioTracks=")
+                            append(source.audioTracks.size)
+                            append(",subtitleTracks=")
+                            append(source.subtitleTracks.size)
+                            append(",defaultAudio=")
+                            append(source.defaultAudioTrack?.displayLabel.orEmpty())
+                            append(",defaultSubtitle=")
+                            append(source.defaultSubtitleTrack?.displayLabel.orEmpty())
+                            if (source.tracks.isNotEmpty()) {
+                                append(",trackDetails=[")
+                                append(
+                                    source.tracks.joinToString(separator = "; ") { track ->
+                                        buildString {
+                                            append("kind=")
+                                            append(track.kind)
+                                            append(",label=")
+                                            append(track.label)
+                                            append(",file=")
+                                            append(track.file)
+                                            append(",default=")
+                                            append(track.isDefault)
+                                            append(",isAudio=")
+                                            append(track.isAudio)
+                                            append(",isSubtitle=")
+                                            append(track.isSubtitle)
+                                        }
+                                    },
+                                )
+                                append("]")
+                            }
+                        }
+                    },
+                )
+            },
+        )
+        return sources
     }
 
     override suspend fun loadPopupAd(): PopupAdConfig? = apiClient.fetchPopupAd()
+
+    companion object {
+        private const val TAG = "Motchill.player"
+    }
 }
 

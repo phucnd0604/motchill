@@ -132,7 +132,7 @@ class MotchillJsonMappersTest {
               "Quality": "1080p",
               "Tracks": [
                 {"kind": "audio", "file": "https://cdn.example.com/audio.m3u8", "label": "English", "default": true},
-                {"kind": "subtitle", "file": "https://cdn.example.com/sub.vtt", "label": "VN", "default": false}
+                {"kind": "captions", "file": "https://cdn.example.com/sub.vtt", "label": "VN", "default": false}
               ]
             }
             """.trimIndent(),
@@ -141,6 +141,32 @@ class MotchillJsonMappersTest {
         assertEquals(5, source.sourceId)
         assertEquals(1, source.audioTracks.size)
         assertEquals(1, source.subtitleTracks.size)
-        assertEquals("Server 1 • 1080p • stream", source.displayName)
+        assertEquals("VN", source.subtitleTracks.first().displayLabel)
+        assertTrue(source.displayName.contains("Server 1"))
+        assertTrue(source.displayName.contains("1080p"))
+        assertTrue(source.displayName.contains("stream"))
+    }
+
+    @Test
+    fun mapsDirectSubtitleFieldIntoSubtitleTracks() {
+        val source = JSONObject(
+            """
+            {
+              "SourceId": 8,
+              "ServerName": "Server 8",
+              "Link": "https://cdn.example.com/master.m3u8",
+              "Subtitle": "https://cdn.example.com/direct-sub.vtt",
+              "Type": 0,
+              "IsFrame": false,
+              "Quality": "720p",
+              "Tracks": []
+            }
+            """.trimIndent(),
+        ).toPlaySource()
+
+        assertEquals(1, source.subtitleTracks.size)
+        assertEquals("Subtitle", source.subtitleTracks.first().displayLabel)
+        assertEquals("https://cdn.example.com/direct-sub.vtt", source.subtitleTracks.first().file)
+        assertEquals(true, source.defaultSubtitleTrack?.isDefault)
     }
 }

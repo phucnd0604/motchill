@@ -1,5 +1,6 @@
 package com.motchill.androidcompose.feature.player
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,10 @@ class PlayerViewModel(
     }
 
     fun load() {
+        Log.d(
+            TAG,
+            "load requested movieId=$movieId episodeId=$episodeId title=${_uiState.value.movieTitle} episode=${_uiState.value.episodeLabel}",
+        )
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
@@ -38,8 +43,11 @@ class PlayerViewModel(
 
             runCatching {
                 val sources = repository.loadEpisodeSources(movieId, episodeId)
+                Log.d(TAG, "repository returned sources count=${sources.size}")
                 val playable = playableSources(sources)
+                Log.d(TAG, "playable sources count=${playable.size}")
                 if (playable.isEmpty()) {
+                    Log.d(TAG, "no playable stream source found movieId=$movieId episodeId=$episodeId")
                     _uiState.value = PlayerUiState(
                         movieId = movieId,
                         episodeId = episodeId,
@@ -55,6 +63,21 @@ class PlayerViewModel(
 
                 val firstSource = playable.first()
                 val selection = defaultTrackSelection(firstSource)
+                Log.d(
+                    TAG,
+                    buildString {
+                        append("initial selection sourceId=")
+                        append(firstSource.sourceId)
+                        append(" server=")
+                        append(firstSource.serverName)
+                        append(" quality=")
+                        append(firstSource.quality)
+                        append(" audio=")
+                        append(selection.audioTrack?.displayLabel.orEmpty())
+                        append(" subtitle=")
+                        append(selection.subtitleTrack?.displayLabel.orEmpty())
+                    },
+                )
                 _uiState.value = PlayerUiState(
                     movieId = movieId,
                     episodeId = episodeId,
@@ -82,6 +105,21 @@ class PlayerViewModel(
 
         val source = sources[index]
         val selection = defaultTrackSelection(source)
+        Log.d(
+            TAG,
+            buildString {
+                append("selectSource index=")
+                append(index)
+                append(" sourceId=")
+                append(source.sourceId)
+                append(" server=")
+                append(source.serverName)
+                append(" audio=")
+                append(selection.audioTrack?.displayLabel.orEmpty())
+                append(" subtitle=")
+                append(selection.subtitleTrack?.displayLabel.orEmpty())
+            },
+        )
         _uiState.value = _uiState.value.copy(
             selectedSourceIndex = index,
             selectedAudioTrack = selection.audioTrack,
@@ -91,11 +129,13 @@ class PlayerViewModel(
 
     fun selectAudioTrack(track: PlayTrack?) {
         if (track != null && track !in selectedSourceTracks().audioTracks) return
+        Log.d(TAG, "selectAudioTrack track=${track?.displayLabel.orEmpty()} file=${track?.file.orEmpty()}")
         _uiState.value = _uiState.value.copy(selectedAudioTrack = track)
     }
 
     fun selectSubtitleTrack(track: PlayTrack?) {
         if (track != null && track !in selectedSourceTracks().subtitleTracks) return
+        Log.d(TAG, "selectSubtitleTrack track=${track?.displayLabel.orEmpty()} file=${track?.file.orEmpty()}")
         _uiState.value = _uiState.value.copy(selectedSubtitleTrack = track)
     }
 
@@ -139,5 +179,7 @@ class PlayerViewModel(
                 }
             }
         }
+
+        private const val TAG = "Motchill.player"
     }
 }

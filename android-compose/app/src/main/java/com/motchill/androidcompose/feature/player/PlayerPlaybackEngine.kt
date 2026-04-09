@@ -1,5 +1,6 @@
 package com.motchill.androidcompose.feature.player
 
+import android.util.Log
 import android.content.Context
 import android.net.Uri
 import androidx.media3.common.C
@@ -7,6 +8,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -50,6 +52,7 @@ class PlayerPlaybackEngine(
     private val _state = MutableStateFlow(PlayerRuntimeState())
     private var observationJob: Job? = null
     private var lastPersistedPositionMs: Long = 0L
+    private var lastPersistedDurationMs: Long = 0L
 
     val player: ExoPlayer = ExoPlayer.Builder(context)
         .setMediaSourceFactory(mediaSourceFactory)
@@ -72,6 +75,25 @@ class PlayerPlaybackEngine(
         startPositionMs: Long? = null,
         playWhenReady: Boolean = true,
     ) {
+        Log.d(
+            TAG,
+            buildString {
+                append("load movieId=")
+                append(movieId)
+                append(" episodeId=")
+                append(episodeId)
+                append(" source=")
+                append(source.debugSummary())
+                append(" audioTrack=")
+                append(audioTrack?.debugSummary().orEmpty())
+                append(" subtitleTrack=")
+                append(subtitleTrack?.debugSummary().orEmpty())
+                append(" startPositionMs=")
+                append(startPositionMs)
+                append(" playWhenReady=")
+                append(playWhenReady)
+            },
+        )
         persistPosition()
         currentSource = source
         currentAudioTrack = audioTrack
@@ -80,7 +102,7 @@ class PlayerPlaybackEngine(
 
         val resumePosition = when {
             startPositionMs != null -> startPositionMs
-            else -> positionStore.load(movieId, episodeId) ?: 0L
+            else -> positionStore.load(movieId, episodeId)?.positionMillis ?: 0L
         }.coerceAtLeast(0L)
 
         val mediaSource = buildMediaSource(
@@ -96,6 +118,10 @@ class PlayerPlaybackEngine(
             player.seekTo(resumePosition)
         }
         player.playWhenReady = playWhenReady
+        Log.d(
+            TAG,
+            "prepared mediaItem=${player.currentMediaItem?.localConfiguration?.uri} resumePositionMs=$resumePosition playWhenReady=$playWhenReady",
+        )
         startObservation()
         syncState()
     }
@@ -112,12 +138,18 @@ class PlayerPlaybackEngine(
     }
 
     fun stopForExit() {
+        scope.launch {
+            flushPosition()
+            stopPlaybackCore()
+        }
+    }
+
+    suspend fun flushPosition() {
         val positionMs = player.currentPosition.coerceAtLeast(0L)
         exitPositionSnapshotMs = positionMs
         if (positionMs > 0L) {
-            scope.launch { persistPosition(positionMs) }
+            persistPosition(positionMs, player.duration.takeIf { duration -> duration > 0L } ?: 0L)
         }
-        stopPlaybackCore()
     }
 
     fun seekTo(positionMs: Long) {
@@ -141,7 +173,7 @@ class PlayerPlaybackEngine(
 
     suspend fun release() {
         val positionMs = exitPositionSnapshotMs ?: player.currentPosition.coerceAtLeast(0L)
-        persistPosition(positionMs)
+        persistPosition(positionMs, player.duration.takeIf { duration -> duration > 0L } ?: 0L)
         stopPlaybackCore()
         player.removeListener(this)
         player.release()
@@ -149,12 +181,33 @@ class PlayerPlaybackEngine(
     }
 
     override fun onPlayerError(error: PlaybackException) {
+        Log.e(TAG, "playerError message=${error.message} code=${error.errorCode}", error)
         _state.update {
             it.copy(errorMessage = error.message ?: error::class.java.simpleName)
         }
     }
 
+    override fun onTracksChanged(tracks: Tracks) {
+        Log.d(TAG, "onTracksChanged ${tracks.debugSummary()}")
+        syncState()
+    }
+
     override fun onEvents(player: Player, events: Player.Events) {
+        Log.d(
+            TAG,
+            buildString {
+                append("onEvents playbackState=")
+                append(player.playbackState)
+                append(" isPlaying=")
+                append(player.isPlaying)
+                append(" playWhenReady=")
+                append(player.playWhenReady)
+                append(" mediaItem=")
+                append(player.currentMediaItem?.localConfiguration?.uri)
+                append(" currentTracks=")
+                append(player.currentTracks.debugSummary())
+            },
+        )
         syncState()
     }
 
@@ -195,20 +248,30 @@ class PlayerPlaybackEngine(
     }
 
     private suspend fun persistPosition() {
-        persistPosition(player.currentPosition.coerceAtLeast(0L))
+        persistPosition(
+            positionMs = player.currentPosition.coerceAtLeast(0L),
+            durationMs = player.duration.takeIf { duration -> duration > 0L } ?: 0L,
+        )
     }
 
-    private suspend fun persistPosition(positionMs: Long) {
+    private suspend fun persistPosition(
+        positionMs: Long,
+        durationMs: Long,
+    ) {
         if (positionMs <= 0L) return
-        positionStore.save(movieId, episodeId, positionMs)
+        positionStore.save(movieId, episodeId, positionMs, durationMs)
         lastPersistedPositionMs = positionMs
+        lastPersistedDurationMs = durationMs
     }
 
     private suspend fun maybePersistPosition() {
         val positionMs = player.currentPosition.coerceAtLeast(0L)
-        if (positionMs <= 0L) return
-        if (abs(positionMs - lastPersistedPositionMs) < 5000L) return
-        persistPosition()
+        val durationMs = player.duration.takeIf { duration -> duration > 0L } ?: 0L
+        if (positionMs <= 0L && durationMs <= 0L) return
+        val positionChanged = abs(positionMs - lastPersistedPositionMs) >= 5000L
+        val durationChanged = durationMs != lastPersistedDurationMs
+        if (!positionChanged && !durationChanged) return
+        persistPosition(positionMs, durationMs)
     }
 
     private fun buildMediaSource(
@@ -216,8 +279,24 @@ class PlayerPlaybackEngine(
         audioTrack: PlayTrack?,
         subtitleTrack: PlayTrack?,
     ) = buildList {
+        Log.d(
+            TAG,
+            buildString {
+                append("buildMediaSource sourceId=")
+                append(source.sourceId)
+                append(" link=")
+                append(source.link)
+                append(" subtitleField=")
+                append(source.subtitle)
+                append(" audioTrack=")
+                append(audioTrack?.debugSummary().orEmpty())
+                append(" subtitleTrack=")
+                append(subtitleTrack?.debugSummary().orEmpty())
+            },
+        )
         add(mediaSourceFactory.createMediaSource(buildVideoItem(source, subtitleTrack)))
         audioTrack?.file?.trim()?.takeIf { it.isNotEmpty() }?.let { audioUri ->
+            Log.d(TAG, "merging alternate audio source uri=$audioUri")
             add(mediaSourceFactory.createMediaSource(MediaItem.fromUri(audioUri)))
         }
     }.let { sources ->
@@ -233,6 +312,7 @@ class PlayerPlaybackEngine(
             builder.setSubtitleConfigurations(
                 listOf(buildSubtitleConfiguration(subtitleTrack, subtitleUri)),
             )
+            Log.d(TAG, "attached subtitle uri=$subtitleUri label=${subtitleTrack.displayLabel}")
         }
         return builder.build()
     }
@@ -251,5 +331,55 @@ class PlayerPlaybackEngine(
             .setLanguage(subtitleTrack.displayLabel)
             .setSelectionFlags(if (subtitleTrack.isDefault) C.SELECTION_FLAG_DEFAULT else 0)
             .build()
+    }
+
+    private fun PlayTrack.debugSummary(): String {
+        return buildString {
+            append("kind=")
+            append(kind)
+            append(",label=")
+            append(displayLabel)
+            append(",default=")
+            append(isDefault)
+            append(",file=")
+            append(file)
+        }
+    }
+
+    private fun PlaySource.debugSummary(): String {
+        return buildString {
+            append("sourceId=")
+            append(sourceId)
+            append(",server=")
+            append(serverName)
+            append(",isFrame=")
+            append(isFrame)
+            append(",quality=")
+            append(quality)
+            append(",type=")
+            append(type)
+            append(",link=")
+            append(link)
+            append(",subtitleField=")
+            append(subtitle)
+            append(",tracks=")
+            append(tracks.size)
+            append(",audioTracks=")
+            append(audioTracks.size)
+            append(",subtitleTracks=")
+            append(subtitleTracks.size)
+            append(",defaultAudio=")
+            append(defaultAudioTrack?.displayLabel.orEmpty())
+            append(",defaultSubtitle=")
+            append(defaultSubtitleTrack?.displayLabel.orEmpty())
+        }
+    }
+
+    private fun Tracks.debugSummary(): String {
+        return "groups=${groups.size}"
+    }
+
+    companion object {
+        private const val TAG = "Motchill.player"
     }
 }

@@ -6,3 +6,9 @@ object PlaybackPositionKeys {
     }
 }
 
+object PlaybackDurationKeys {
+    fun key(movieId: Int, episodeId: Int): String {
+        return "$PLAYBACK_DURATION_PREFIX:$movieId:$episodeId"
+    }
+}
+

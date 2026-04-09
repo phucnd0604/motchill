@@ -1,5 +1,6 @@
 package com.motchill.androidcompose.feature.detail
 
+import com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot
 import com.motchill.androidcompose.domain.model.MovieDetail
 
 enum class DetailSectionTab {
@@ -27,6 +28,7 @@ data class DetailUiState(
     val detail: MovieDetail? = null,
     val selectedTab: DetailSectionTab? = null,
     val isLiked: Boolean = false,
+    val episodeProgressById: Map<Int, PlaybackProgressSnapshot> = emptyMap(),
 ) {
     val availableTabs: List<DetailSectionTab>
         get() = detail?.availableTabs.orEmpty()

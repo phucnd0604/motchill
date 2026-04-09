@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Favorite
@@ -33,8 +34,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.motchill.androidcompose.core.designsystem.MotchillFocusCard
 import com.motchill.androidcompose.core.designsystem.MotchillRemoteImage
+import com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot
 import com.motchill.androidcompose.domain.model.MovieCard
 import com.motchill.androidcompose.domain.model.MovieDetail
 import com.motchill.androidcompose.domain.model.MovieEpisode
@@ -78,6 +83,7 @@ internal fun DetailScreenContent(
                 selectedTab = uiState.effectiveSelectedTab,
                 availableTabs = uiState.availableTabs,
                 isLiked = uiState.isLiked,
+                episodeProgressById = uiState.episodeProgressById,
                 onBack = onBack,
                 onOpenSearch = onOpenSearch,
                 onOpenDetail = onOpenDetail,
@@ -96,6 +102,7 @@ private fun DetailContent(
     selectedTab: DetailSectionTab,
     availableTabs: List<DetailSectionTab>,
     isLiked: Boolean,
+    episodeProgressById: Map<Int, PlaybackProgressSnapshot>,
     onBack: () -> Unit,
     onOpenSearch: () -> Unit,
     onOpenDetail: (String) -> Unit,
@@ -145,6 +152,7 @@ private fun DetailContent(
                         DetailTabBody(
                             detail = detail,
                             selectedTab = selectedTab,
+                            episodeProgressById = episodeProgressById,
                             onOpenEpisode = onOpenEpisode,
                             onOpenDetail = onOpenDetail,
                             onOpenSearch = onOpenSearch,
@@ -239,12 +247,13 @@ private fun DetailTabStrip(tabs: List<DetailSectionTab>, selectedTab: DetailSect
 private fun DetailTabBody(
     detail: MovieDetail,
     selectedTab: DetailSectionTab,
+    episodeProgressById: Map<Int, PlaybackProgressSnapshot>,
     onOpenEpisode: (Int, Int, String, String) -> Unit,
     onOpenDetail: (String) -> Unit,
     onOpenSearch: () -> Unit,
 ) {
     when (selectedTab) {
-        DetailSectionTab.episodes -> DetailEpisodesTab(detail, onOpenEpisode)
+        DetailSectionTab.episodes -> DetailEpisodesTab(detail, episodeProgressById, onOpenEpisode)
         DetailSectionTab.synopsis -> DetailSynopsisTab(detail)
         DetailSectionTab.information -> DetailInformationTab(detail)
         DetailSectionTab.classification -> DetailClassificationTab(detail)
@@ -254,7 +263,11 @@ private fun DetailTabBody(
 }
 
 @Composable
-private fun DetailEpisodesTab(detail: MovieDetail, onOpenEpisode: (Int, Int, String, String) -> Unit) {
+private fun DetailEpisodesTab(
+    detail: MovieDetail,
+    episodeProgressById: Map<Int, PlaybackProgressSnapshot>,
+    onOpenEpisode: (Int, Int, String, String) -> Unit,
+) {
     if (detail.episodes.isEmpty()) return
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row {
@@ -263,7 +276,11 @@ private fun DetailEpisodesTab(detail: MovieDetail, onOpenEpisode: (Int, Int, Str
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             detail.episodes.forEach { episode ->
-                DetailEpisodeTile(episode = episode, onClick = { onOpenEpisode(detail.id, episode.id, detail.title, episode.label) })
+                DetailEpisodeTile(
+                    episode = episode,
+                    progress = episodeProgressById[episode.id],
+                    onClick = { onOpenEpisode(detail.id, episode.id, detail.title, episode.label) },
+                )
             }
         }
     }
@@ -365,20 +382,73 @@ private fun DetailInfoCard(label: String, value: String) {
 }
 
 @Composable
-private fun DetailEpisodeTile(episode: MovieEpisode, onClick: () -> Unit) {
-    MotchillFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(16.dp), focusedBorderColor = Color(0xFFE8A7A7), focusedBackgroundColor = Color(0xFF251717), focusScale = 1.01f) {
-        Column(
-            modifier = Modifier.fillMaxWidth().background(Color(0xFF171717), RoundedCornerShape(16.dp)).border(1.dp, Color(0xFF2D2D2D), RoundedCornerShape(16.dp)).padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+private fun DetailEpisodeTile(
+    episode: MovieEpisode,
+    progress: PlaybackProgressSnapshot?,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(16.dp)
+    val progressFraction = progress?.progressFraction ?: 0f
+
+    MotchillFocusCard(
+        onClick = onClick,
+        borderRadius = shape,
+        focusedBorderColor = Color(0xFFE8A7A7),
+        focusedBackgroundColor = Color(0xFF251717),
+        focusScale = 1.01f,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .drawWithContent {
+                    drawRoundRect(
+                        color = Color(0xFF171717),
+                        size = size,
+                        cornerRadius = CornerRadius(16.dp.toPx(), 16.dp.toPx()),
+                    )
+                    if (progressFraction > 0f) {
+                        drawRoundRect(
+                            color = Color(0xFFE50914).copy(alpha = 0.60f),
+                            size = Size(width = size.width * progressFraction, height = size.height),
+                            cornerRadius = CornerRadius(16.dp.toPx(), 16.dp.toPx()),
+                        )
+                    }
+                    drawContent()
+                }
+                .border(1.dp, Color(0xFF2D2D2D), shape),
         ) {
-            Text(text = episode.label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            val subtitleParts = buildList { if (episode.type.trim().isNotEmpty()) add(episode.type.trim()); if (episode.status != null) add("${episode.status}") }
-            Text(
-                text = if (subtitleParts.isEmpty()) "Episode detail from public API" else subtitleParts.joinToString(" • "),
-                color = Color.White.copy(alpha = 0.60f),
-                fontSize = 12.sp,
-            )
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(text = episode.label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                val subtitleParts = buildList {
+                    if (episode.type.trim().isNotEmpty()) add(episode.type.trim())
+                    if (episode.status != null) add("${episode.status}")
+                    progress?.takeIf { it.durationMillis > 0L }?.let {
+                        add("đã xem ${formatDuration(it.positionMillis)} / ${formatDuration(it.durationMillis)}")
+                    }
+                }
+                Text(
+                    text = if (subtitleParts.isEmpty()) "Episode detail from public API" else subtitleParts.joinToString(" • "),
+                    color = Color.White.copy(alpha = 0.60f),
+                    fontSize = 12.sp,
+                )
+            }
         }
+    }
+}
+
+private fun formatDuration(positionMs: Long): String {
+    val totalSeconds = positionMs.coerceAtLeast(0L) / 1000L
+    val hours = totalSeconds / 3600L
+    val minutes = (totalSeconds % 3600L) / 60L
+    val seconds = totalSeconds % 60L
+    return if (hours > 0L) {
+        String.format(java.util.Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds)
     }
 }
 
@@ -510,4 +580,3 @@ private fun formatCount(value: Int): String = when {
     value >= 1_000 -> String.format("%.1fk", value / 1_000.0)
     else -> value.toString()
 }
-

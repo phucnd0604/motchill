@@ -120,9 +120,15 @@ fun PlayerScreen(
     var interactionNonce by remember { mutableStateOf(0L) }
     var controlFocusEpoch by remember { mutableStateOf(0L) }
 
+    val exitPlayer: () -> Unit = {
+        coroutineScope.launch {
+            engine.flushPosition()
+            onBack()
+        }
+    }
+
     BackHandler {
-        engine.stopForExit()
-        onBack()
+        exitPlayer()
     }
 
     DisposableEffect(activity) {
@@ -201,6 +207,7 @@ fun PlayerScreen(
                 engine = engine,
                 controlsVisible = controlsVisible,
                 controlFocusEpoch = controlFocusEpoch,
+                onExit = exitPlayer,
                 onSurfaceTapped = {
                     interactionNonce += 1
                     controlsVisible = !controlsVisible
@@ -262,6 +269,7 @@ private fun PlayerContent(
     engine: PlayerPlaybackEngine,
     controlsVisible: Boolean,
     controlFocusEpoch: Long,
+    onExit: () -> Unit,
     onSurfaceTapped: () -> Unit,
     onShowControls: () -> Unit,
     onTouchControls: () -> Unit,
@@ -335,8 +343,7 @@ private fun PlayerContent(
                     when (val effect = decision.effect) {
                         PlayerRemoteEffect.NoOp -> Unit
                         PlayerRemoteEffect.Back -> {
-                            engine.stopForExit()
-                            onBack()
+                            onExit()
                         }
 
                         is PlayerRemoteEffect.SeekBy -> onSeekBy(effect.deltaMs)
@@ -364,8 +371,7 @@ private fun PlayerContent(
                 hostFocusRequester.requestFocus()
             },
             onBack = {
-                engine.stopForExit()
-                onBack()
+                onExit()
             },
             onSelectSource = { index ->
                 focusedControl = PlayerFocusedControl.Source(index)

@@ -17,10 +17,10 @@ data class PlayTrack(
         }
 
     val isAudio: Boolean
-        get() = matchesTrackKind(kind, "audio")
+        get() = matchesTrackKind(kind, AUDIO_KIND_HINTS)
 
     val isSubtitle: Boolean
-        get() = matchesTrackKind(kind, "subtitle") || matchesTrackKind(kind, "sub")
+        get() = matchesTrackKind(kind, SUBTITLE_KIND_HINTS) || looksLikeSubtitleFile(file)
 }
 
 data class PlaySource(
@@ -44,7 +44,24 @@ data class PlaySource(
         get() = tracks.filter { it.isAudio }
 
     val subtitleTracks: List<PlayTrack>
-        get() = tracks.filter { it.isSubtitle }
+        get() = buildList {
+            val explicitSubtitleTracks = tracks.filter { it.isSubtitle }
+            addAll(explicitSubtitleTracks)
+            if (explicitSubtitleTracks.isEmpty()) {
+                subtitle.trim()
+                    .takeIf { it.isNotEmpty() && looksLikeSubtitleFile(it) }
+                    ?.let { subtitleUri ->
+                        add(
+                            PlayTrack(
+                                kind = "subtitle",
+                                file = subtitleUri,
+                                label = "Subtitle",
+                                isDefault = true,
+                            ),
+                        )
+                    }
+            }
+        }
 
     val hasAudioTracks: Boolean
         get() = audioTracks.isNotEmpty()
@@ -67,4 +84,32 @@ private fun matchesTrackKind(kind: String, expected: String): Boolean {
     val normalizedExpected = expected.trim().lowercase()
     return normalizedKind.contains(normalizedExpected)
 }
+
+private fun matchesTrackKind(kind: String, expectedHints: List<String>): Boolean {
+    val normalizedKind = kind.trim().lowercase()
+    if (normalizedKind.isEmpty()) return false
+    return expectedHints.any { hint -> normalizedKind.contains(hint) }
+}
+
+private fun looksLikeSubtitleFile(file: String): Boolean {
+    val extension = file.trim().substringAfterLast('.', "").lowercase()
+    return extension in setOf("srt", "vtt", "ass", "ssa", "sub", "ttml", "dfxp")
+}
+
+private val AUDIO_KIND_HINTS = listOf(
+    "audio",
+    "dub",
+    "voice",
+    "aac",
+    "mp4a",
+)
+
+private val SUBTITLE_KIND_HINTS = listOf(
+    "subtitle",
+    "sub",
+    "caption",
+    "captions",
+    "cc",
+    "text",
+)
 

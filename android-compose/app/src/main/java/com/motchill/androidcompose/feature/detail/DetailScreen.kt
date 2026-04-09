@@ -4,7 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.motchill.androidcompose.app.di.MotchillAppContainer
 
@@ -21,12 +25,26 @@ fun DetailScreen(
             DetailViewModel.factory(
                 repository = MotchillAppContainer.repository,
                 likedMovieStore = MotchillAppContainer.likedMovieStore,
+                playbackPositionStore = MotchillAppContainer.playbackPositionStore,
                 slug = slug,
             )
         },
     )
     val uiState by detailViewModel.uiState.collectAsState()
     val uriHandler = LocalUriHandler.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner, detailViewModel) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                detailViewModel.refreshEpisodeProgress()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     DetailScreenContent(
         uiState = uiState,

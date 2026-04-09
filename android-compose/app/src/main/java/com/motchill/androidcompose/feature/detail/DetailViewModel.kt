@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.motchill.androidcompose.core.storage.LikedMovieStore
+import com.motchill.androidcompose.core.storage.PlaybackPositionStore
 import com.motchill.androidcompose.data.repository.MotchillRepository
 import com.motchill.androidcompose.domain.model.MovieCard
 import kotlinx.coroutines.launch
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class DetailViewModel(
     private val repository: MotchillRepository,
     private val likedMovieStore: LikedMovieStore,
+    private val playbackPositionStore: PlaybackPositionStore,
     private val slug: String,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DetailUiState())
@@ -32,12 +34,14 @@ class DetailViewModel(
             runCatching {
                 val detail = repository.loadDetail(slug)
                 val liked = detail.id > 0 && likedMovieStore.isLiked(detail.id)
+                val episodeProgressById = loadEpisodeProgress(detail.id, detail.episodes)
                 _uiState.value = DetailUiState(
                     isLoading = false,
                     errorMessage = null,
                     detail = detail,
                     selectedTab = defaultDetailTab(detail),
                     isLiked = liked,
+                    episodeProgressById = episodeProgressById,
                 )
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
@@ -50,6 +54,14 @@ class DetailViewModel(
 
     fun selectTab(tab: DetailSectionTab) {
         _uiState.value = _uiState.value.copy(selectedTab = tab)
+    }
+
+    fun refreshEpisodeProgress() {
+        val detail = _uiState.value.detail ?: return
+        viewModelScope.launch {
+            val episodeProgressById = loadEpisodeProgress(detail.id, detail.episodes)
+            _uiState.value = _uiState.value.copy(episodeProgressById = episodeProgressById)
+        }
     }
 
     fun toggleLike() {
@@ -92,17 +104,30 @@ class DetailViewModel(
         }
     }
 
+    private suspend fun loadEpisodeProgress(
+        movieId: Int,
+        episodes: List<com.motchill.androidcompose.domain.model.MovieEpisode>,
+    ): Map<Int, com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot> {
+        return buildMap {
+            episodes.forEach { episode ->
+                val snapshot = playbackPositionStore.load(movieId, episode.id) ?: return@forEach
+                put(episode.id, snapshot)
+            }
+        }
+    }
+
     companion object {
         fun factory(
             repository: MotchillRepository,
             likedMovieStore: LikedMovieStore,
+            playbackPositionStore: PlaybackPositionStore,
             slug: String,
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     if (modelClass.isAssignableFrom(DetailViewModel::class.java)) {
-                        return DetailViewModel(repository, likedMovieStore, slug) as T
+                        return DetailViewModel(repository, likedMovieStore, playbackPositionStore, slug) as T
                     }
                     throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
                 }

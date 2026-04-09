@@ -1,19 +1,25 @@
-# Motchill Mobile API Base - Software Development Docs
+# Motchill Software Development Docs
 
-Tài liệu này mô tả app Flutter `mobile-api-base` theo góc nhìn phát triển phần mềm: kiến trúc, module, API, dữ liệu, và luồng điều hướng.
+These docs describe the current native Android app in `android-compose` and the shared API/domain model it uses.
 
-## Tài liệu con
+## Subdocs
 
-- [Kiến trúc hệ thống](architecture.md)
-- [Module và màn hình](modules.md)
-- [API, dữ liệu và lưu trữ](api-data.md)
-- [Giải mã payload và phục hồi key](security-decryption.md)
-- [Điều hướng và flow](navigation.md)
+- [Architecture](architecture.md)
+- [Modules and Screens](modules.md)
+- [API, Data, and Storage](api-data.md)
+- [Payload Decryption and Key Recovery](security-decryption.md)
+- [Navigation Flow](navigation.md)
 
-## Mục tiêu của app
+## Current Product Scope
 
-- Truy cập nội dung phim từ public Motchill API.
-- Hiển thị home feed, tìm kiếm, lọc theo thể loại/quốc gia/năm/kiểu phim.
-- Xem chi tiết phim, theo dõi tập, trailer, related movies.
-- Phát video bằng `media_kit` cho stream trực tiếp và `webview_flutter` cho nguồn nhúng.
-- Lưu liked movies và vị trí xem dở dang bằng `SharedPreferences`.
+- Browse home, search, categories, detail pages, and related items.
+- Play episode sources in the native Android player.
+- Keep playback position locally per episode.
+- Support both direct stream sources and embedded `iframe` sources.
+
+## Player Notes
+
+- Native playback uses `androidx.media3` / ExoPlayer.
+- `isFrame=true` sources are treated as embedded sources and are not part of the native playable rail.
+- `Tracks.kind=captions` is treated as subtitle metadata, not as audio dubbing.
+- If the backend returns a real audio dub, it must appear as an audio track or a separate playable source.
