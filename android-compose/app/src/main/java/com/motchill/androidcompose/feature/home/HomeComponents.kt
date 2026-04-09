@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -151,6 +153,7 @@ private fun HomeStackContent(
                 section = section,
                 selectedMovieId = null,
                 onMovieClick = { movie -> onOpenMovie(movie.link) },
+                onOpenMovie = onOpenMovie,
                 onOpenSection = onOpenSection,
             )
         }
@@ -197,6 +200,7 @@ private fun HomeSplitContent(
                     section = section,
                     selectedMovieId = selectedMovie.id,
                     onMovieClick = { movie -> onSelectHeroMovie(movie.id) },
+                    onOpenMovie = onOpenMovie,
                     onOpenSection = onOpenSection,
                 )
             }
@@ -219,6 +223,7 @@ private fun HomeSectionRail(
     section: HomeSection,
     selectedMovieId: Int?,
     onMovieClick: (MovieCard) -> Unit,
+    onOpenMovie: (String) -> Unit,
     onOpenSection: (String, String) -> Unit,
 ) {
     val products = section.products
@@ -245,10 +250,13 @@ private fun HomeSectionRail(
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(end = 2.dp)) {
             items(products, key = { it.id }) { movie ->
+                val isSelected = movie.id == selectedMovieId
                 HomeSectionCard(
                     movie = movie,
-                    selected = movie.id == selectedMovieId,
-                    onClick = { onMovieClick(movie) },
+                    selected = isSelected,
+                    onClick = {
+                        if (isSelected) onOpenMovie(movie.link) else onMovieClick(movie)
+                    },
                 )
             }
         }
@@ -343,6 +351,12 @@ private fun HomeSpotlightPanel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(420.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = MutableInteractionSource(),
+                    ) {
+                        onOpenMovie(selectedMovie.link)
+                    }
                     .background(
                         color = Color(0xFF141414),
                         shape = RoundedCornerShape(28.dp),
