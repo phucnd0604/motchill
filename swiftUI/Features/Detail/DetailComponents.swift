@@ -58,8 +58,15 @@ struct DetailScreen: View {
         UIApplication.shared.open(url)
     }
 
-    private func openEpisode() {
-        router.push(.player)
+    private func openEpisode(_ episode: MotchillMovieEpisode) {
+        router.push(
+            .player(
+                movieID: viewModel.detail?.id ?? viewModel.movie.id,
+                episodeID: episode.id,
+                movieTitle: viewModel.title,
+                episodeLabel: episode.label
+            )
+        )
     }
 }
 
@@ -68,10 +75,11 @@ private struct DetailLoadedContent: View {
     let router: AppRouter
     let onToggleLike: () -> Void
     let onOpenTrailer: () -> Void
-    let onOpenEpisode: () -> Void
+    let onOpenEpisode: (MotchillMovieEpisode) -> Void
 
     var body: some View {
         let contentWidth = max(AppContainer.shared.configuration.screenSize.width - 48, 1)
+        let heroHeight = contentWidth * 10 / 16
 
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -80,9 +88,13 @@ private struct DetailLoadedContent: View {
                     router: router,
                     onToggleLike: onToggleLike,
                     onOpenTrailer: onOpenTrailer,
-                    onOpenEpisode: onOpenEpisode
+                    onOpenEpisode: {
+                        guard let episode = viewModel.detail?.episodes.first else { return }
+                        onOpenEpisode(episode)
+                    },
+                    width: contentWidth,
+                    height: heroHeight
                 )
-                .aspectRatio(16 / 10, contentMode: .fit)
 
                 DetailOverviewCard(
                     viewModel: viewModel,
@@ -102,7 +114,9 @@ private struct DetailLoadedContent: View {
                                 detail: viewModel.detail,
                                 selectedTab: viewModel.effectiveSelectedTab,
                                 episodeProgressById: viewModel.episodeProgressById,
-                                router: router
+                                onOpenEpisode: onOpenEpisode,
+                                onOpenDetail: { router.push(.detail($0)) },
+                                onOpenSearch: { router.push(.search) }
                             )
                         }
                     }
@@ -121,10 +135,13 @@ private struct DetailHeroSection: View {
     let onToggleLike: () -> Void
     let onOpenTrailer: () -> Void
     let onOpenEpisode: () -> Void
+    let width: CGFloat
+    let height: CGFloat
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             RemoteImageView(url: detailURL(viewModel.backDropURL()))
+                .frame(width: width, height: height)
                 .overlay(
                     LinearGradient(
                         colors: [
@@ -191,8 +208,9 @@ private struct DetailHeroSection: View {
                 .padding(.bottom, 8)
             }
             .padding(16)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            .frame(width: width, height: height, alignment: .bottomLeading)
         }
+        .frame(width: width, height: height)
         .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 36, style: .continuous)
@@ -289,12 +307,14 @@ private func DetailTabBody(
     detail: MotchillMovieDetail?,
     selectedTab: DetailSectionTab,
     episodeProgressById: [Int: MotchillPlaybackProgressSnapshot],
-    router: AppRouter
+    onOpenEpisode: @escaping (MotchillMovieEpisode) -> Void,
+    onOpenDetail: @escaping (MotchillMovieCard) -> Void,
+    onOpenSearch: @escaping () -> Void
 ) -> some View {
     if let detail {
         switch selectedTab {
         case .episodes:
-            DetailEpisodesTab(detail: detail, episodeProgressById: episodeProgressById, onOpenEpisode: { router.push(.player) })
+            DetailEpisodesTab(detail: detail, episodeProgressById: episodeProgressById, onOpenEpisode: onOpenEpisode)
         case .synopsis:
             DetailSynopsisTab(detail: detail)
         case .information:
@@ -304,7 +324,7 @@ private func DetailTabBody(
         case .gallery:
             DetailGalleryTab(detail: detail)
         case .related:
-            DetailRelatedTab(detail: detail, router: router)
+            DetailRelatedTab(detail: detail, onOpenDetail: onOpenDetail, onOpenSearch: onOpenSearch)
         }
     }
 }
@@ -312,7 +332,7 @@ private func DetailTabBody(
 private struct DetailEpisodesTab: View {
     let detail: MotchillMovieDetail
     let episodeProgressById: [Int: MotchillPlaybackProgressSnapshot]
-    let onOpenEpisode: () -> Void
+    let onOpenEpisode: (MotchillMovieEpisode) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -325,7 +345,7 @@ private struct DetailEpisodesTab: View {
             } else {
                 VStack(spacing: 10) {
                     ForEach(detail.episodes) { episode in
-                        Button(action: onOpenEpisode) {
+                        Button(action: { onOpenEpisode(episode) }) {
                             DetailEpisodeRow(
                                 episode: episode,
                                 progress: episodeProgressById[episode.id]
@@ -432,14 +452,15 @@ private struct DetailGalleryTab: View {
 
 private struct DetailRelatedTab: View {
     let detail: MotchillMovieDetail
-    let router: AppRouter
+    let onOpenDetail: (MotchillMovieCard) -> Void
+    let onOpenSearch: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 DetailSectionTitle(text: "Related")
                 Spacer(minLength: 12)
-                Button(action: { router.push(.search) }) {
+                Button(action: onOpenSearch) {
                     Text("VIEW MORE")
                         .font(AppTheme.captionFont.weight(.semibold))
                         .foregroundStyle(AppTheme.textPrimary)
@@ -458,7 +479,7 @@ private struct DetailRelatedTab: View {
                             MovieCardView(
                                 movie: movie,
                                 onTap: {
-                                    router.push(.detail(movie))
+                                    onOpenDetail(movie)
                                 }
                             )
                         }

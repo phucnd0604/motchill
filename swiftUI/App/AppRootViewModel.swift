@@ -10,7 +10,6 @@ final class AppRootViewModel {
     let launchTargets: [AppRoute] = [
         .home,
         .search,
-        .player,
     ]
 
     let footnote = "iOS 18+ · standalone workspace"

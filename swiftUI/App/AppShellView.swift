@@ -23,8 +23,16 @@ struct AppShellView: View {
                         playbackPositionStore: AppContainer.shared.playbackPositionStore,
                         router: router
                     )
-                case .player:
-                    PlayerView()
+                case .player(let movieID, let episodeID, let movieTitle, let episodeLabel):
+                    PlayerView(
+                        movieID: movieID,
+                        episodeID: episodeID,
+                        movieTitle: movieTitle,
+                        episodeLabel: episodeLabel,
+                        repository: AppContainer.shared.repository,
+                        playbackPositionStore: AppContainer.shared.playbackPositionStore,
+                        router: router
+                    )
                 }
             }
         }

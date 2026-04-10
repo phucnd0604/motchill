@@ -4,14 +4,19 @@ enum AppRoute: Hashable {
     case home
     case search
     case detail(MotchillMovieCard)
-    case player
+    case player(
+        movieID: Int,
+        episodeID: Int,
+        movieTitle: String,
+        episodeLabel: String
+    )
 
     var title: String {
         switch self {
         case .home: return "Home"
         case .search: return "Search"
         case .detail(let movie): return movie.displayTitle
-        case .player: return "Player"
+        case .player(let movieID, _, _, _): return "Player #\(movieID)"
         }
     }
 
@@ -23,8 +28,10 @@ enum AppRoute: Hashable {
             return "Shared route for search and category presets."
         case .detail(let movie):
             return movie.displaySubtitle
-        case .player:
-            return "Direct stream playback with resume and tracks."
+        case .player(_, _, let movieTitle, let episodeLabel):
+            return [movieTitle, episodeLabel]
+                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+                .joined(separator: " • ")
         }
     }
 }
