@@ -4,7 +4,7 @@ import UIKit
 struct HomeView: View {
     @State private var viewModel: HomeViewModel
     let router: AppRouter
-    private let shouldLoadOnAppear: Bool
+    @State private var shouldLoadOnAppear: Bool
     private var isPad: Bool {
         UIDevice.current.userInterfaceIdiom == .pad
     }
@@ -58,6 +58,7 @@ struct HomeView: View {
                                 .fill(selected ? AppTheme.accent : Color.clear)
                         )
                 }
+                                 .frame(maxWidth: 500)
                 
             }
             
@@ -81,6 +82,7 @@ struct HomeView: View {
             }
             
             await viewModel.load()
+            shouldLoadOnAppear = false
         }
     }
 }
