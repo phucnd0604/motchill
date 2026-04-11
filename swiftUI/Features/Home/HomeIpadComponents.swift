@@ -189,15 +189,6 @@ private struct HomeIpadHeroCardView: View {
                             }
                         }
                         .frame(alignment: .center)
-                        Text(movieSummary(for: movie))
-                            .lineLimit(5)
-                            .font(.system(size: 20, weight: .regular, design: .rounded))
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .lineSpacing(8)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: 560, alignment: .leading)
-                        
-                        HomeIpadCreditRow(movie: movie)
                         
                         HStack(spacing: 16) {
                             Button(action: onWatchNow) {
@@ -211,6 +202,17 @@ private struct HomeIpadHeroCardView: View {
                             .buttonStyle(.plain)
                         }
                         .padding(.top, 8)
+                        
+                        Text(movieSummary(for: movie))
+                            .lineLimit(5)
+                            .font(.system(size: 20, weight: .regular, design: .rounded))
+                            .foregroundStyle(AppTheme.textSecondary)
+                            .lineSpacing(8)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: 560, alignment: .leading)
+                        
+                        HomeIpadCreditRow(movie: movie)
+                                                
                     }
                     .frame(maxWidth: 660, alignment: .leading)
                     

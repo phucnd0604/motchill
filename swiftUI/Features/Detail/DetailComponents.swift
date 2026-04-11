@@ -4,6 +4,9 @@ import UIKit
 struct DetailScreen: View {
     @State private var viewModel: DetailViewModel
     let router: AppRouter
+    private var isPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
 
     init(viewModel: DetailViewModel, router: AppRouter) {
         _viewModel = State(initialValue: viewModel)
@@ -30,13 +33,23 @@ struct DetailScreen: View {
                     DetailLoadingState(movie: viewModel.movie)
                 }
             } else {
-                DetailLoadedContent(
-                    viewModel: viewModel,
-                    router: router,
-                    onToggleLike: toggleLike,
-                    onOpenTrailer: openTrailer,
-                    onOpenEpisode: openEpisode
-                )
+                if isPad {
+                    DetailsIpadScreen(
+                        viewModel: viewModel,
+                        router: router,
+                        onToggleLike: toggleLike,
+                        onOpenTrailer: openTrailer,
+                        onOpenEpisode: openEpisode
+                    )
+                } else {
+                    DetailLoadedContent(
+                        viewModel: viewModel,
+                        router: router,
+                        onToggleLike: toggleLike,
+                        onOpenTrailer: openTrailer,
+                        onOpenEpisode: openEpisode
+                    )
+                }
             }
         }
         .toolbar {
@@ -510,7 +523,6 @@ private struct DetailEpisodeRow: View {
                     .foregroundStyle(AppTheme.textSecondary)
             }
         }
-        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(Color.white.opacity(0.04))

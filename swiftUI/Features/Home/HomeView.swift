@@ -50,15 +50,14 @@ struct HomeView: View {
                                  horizontalPadding: 8) { item, selected in
                     Text(item.title)
                         .font(AppTheme.sectionTitleFont.weight(.semibold))
-                        .foregroundStyle(selected ? Color.yellow : AppTheme.textPrimary)
+                        .foregroundStyle(selected ? Color(hex: "FFB4AA") : AppTheme.textPrimary)
                         .padding(.vertical, 6)
                         .padding(.horizontal, 12)
                         .background(
                             Capsule()
-                                .fill(selected ? AppTheme.accent : Color.clear)
+                                .fill(selected ? Color.white.opacity(0.2) : Color.clear)
                         )
-                }
-                                 .frame(maxWidth: 500)
+                }.frame(maxWidth: 500)
                 
             }
             
