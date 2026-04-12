@@ -1,9 +1,9 @@
 //
 //  DetailsIpadScreen.swift
-//  MotchillSwiftUI
+//  PhucTvSwiftUI
 //
 //  Created by Phucnd on 11/4/26.
-//  Copyright © 2026 Motchill. All rights reserved.
+//  Copyright © 2026 PhucTv. All rights reserved.
 //
 
 import SwiftUI
@@ -14,7 +14,7 @@ struct DetailsIpadScreen: View {
     let router: AppRouter
     let onToggleLike: () -> Void
     let onOpenTrailer: () -> Void
-    let onOpenEpisode: (MotchillMovieEpisode) -> Void
+    let onOpenEpisode: (PhucTvMovieEpisode) -> Void
 
     var body: some View {
         GeometryReader { proxy in
@@ -113,7 +113,7 @@ private struct IpadDetailSidebar: View {
 private struct IpadDetailContent: View {
     let viewModel: DetailViewModel
     let router: AppRouter
-    let onOpenEpisode: (MotchillMovieEpisode) -> Void
+    let onOpenEpisode: (PhucTvMovieEpisode) -> Void
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -423,8 +423,8 @@ private struct IpadInfoCard: View {
 }
 
 private struct IpadEpisodeRow: View {
-    let episode: MotchillMovieEpisode
-    let progress: MotchillPlaybackProgressSnapshot?
+    let episode: PhucTvMovieEpisode
+    let progress: PhucTvPlaybackProgressSnapshot?
     let episodeIndex: Int
 
     var body: some View {

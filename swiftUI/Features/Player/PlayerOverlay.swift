@@ -1,9 +1,9 @@
 //
 //  PlayerOverlay.swift
-//  MotchillSwiftUI
+//  PhucTvSwiftUI
 //
 //  Created by Phucnd on 11/4/26.
-//  Copyright © 2026 Motchill. All rights reserved.
+//  Copyright © 2026 PhucTv. All rights reserved.
 //
 
 import SwiftUI
@@ -21,7 +21,7 @@ struct PlayerOverlay: View {
         self.onBack = onBack
     }
 
-    private var selectedSourceBinding: Binding<MotchillPlaySource?> {
+    private var selectedSourceBinding: Binding<PhucTvPlaySource?> {
         Binding(
             get: { viewModel.selectedSource },
             set: { newValue in

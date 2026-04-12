@@ -5,17 +5,17 @@ import Observation
 @Observable
 final class SearchViewModel {
     @ObservationIgnored
-    private let repository: MotchillRepository
+    private let repository: PhucTvRepository
     @ObservationIgnored
-    private let likedMovieStore: MotchillLikedMovieStoring
+    private let likedMovieStore: PhucTvLikedMovieStoring
     @ObservationIgnored
     private let routeInput: SearchRouteInput
 
     var uiState: SearchUIState
 
     init(
-        repository: MotchillRepository,
-        likedMovieStore: MotchillLikedMovieStoring,
+        repository: PhucTvRepository,
+        likedMovieStore: PhucTvLikedMovieStoring,
         routeInput: SearchRouteInput = SearchRouteInput(),
         uiState: SearchUIState? = nil
     ) {
@@ -56,7 +56,7 @@ final class SearchViewModel {
 
             await loadPage(1)
         } catch {
-            MotchillLogger.shared.error(
+            PhucTvLogger.shared.error(
                 error,
                 message: "Search load failed",
                 metadata: ["state": "search_load"]
@@ -90,7 +90,7 @@ final class SearchViewModel {
         await loadPage(1)
     }
 
-    func selectCategory(_ option: MotchillSearchFacetOption?) async {
+    func selectCategory(_ option: PhucTvSearchFacetOption?) async {
         if let option, option.hasID {
             uiState = uiState.withCategory(option)
         } else {
@@ -99,7 +99,7 @@ final class SearchViewModel {
         await loadPage(1)
     }
 
-    func selectCountry(_ option: MotchillSearchFacetOption?) async {
+    func selectCountry(_ option: PhucTvSearchFacetOption?) async {
         if let option, option.hasID {
             uiState = uiState.withCountry(option)
         } else {
@@ -108,7 +108,7 @@ final class SearchViewModel {
         await loadPage(1)
     }
 
-    func selectTypeRaw(_ option: MotchillSearchChoice?) async {
+    func selectTypeRaw(_ option: PhucTvSearchChoice?) async {
         if let option, !option.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             uiState = uiState.withTypeRaw(option)
         } else {
@@ -117,7 +117,7 @@ final class SearchViewModel {
         await loadPage(1)
     }
 
-    func selectYear(_ option: MotchillSearchChoice?) async {
+    func selectYear(_ option: PhucTvSearchChoice?) async {
         if let option, !option.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             uiState = uiState.withYear(option)
         } else {
@@ -242,7 +242,7 @@ final class SearchViewModel {
             )
             uiState = state.withSearchResults(results, pageNumber: pageNumber)
         } catch {
-            MotchillLogger.shared.error(
+            PhucTvLogger.shared.error(
                 error,
                 message: "Search page load failed",
                 metadata: [

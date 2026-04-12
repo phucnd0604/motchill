@@ -5,16 +5,16 @@ final class AppContainer {
     static let shared = AppContainer()
 
     let configuration = AppConfiguration()
-    let apiClient: MotchillAPIClient
-    let repository: MotchillRepository
-    let likedMovieStore: MotchillLikedMovieStoring
-    let playbackPositionStore: MotchillPlaybackPositionStoring
+    let apiClient: PhucTvAPIClient
+    let repository: PhucTvRepository
+    let likedMovieStore: PhucTvLikedMovieStoring
+    let playbackPositionStore: PhucTvPlaybackPositionStoring
 
     private init() {
-        _ = MotchillLogger.shared
-        apiClient = MotchillAPIClient(configuration: configuration)
-        repository = DefaultMotchillRepository(apiClient: apiClient)
-        likedMovieStore = UserDefaultsMotchillLikedMovieStore()
-        playbackPositionStore = UserDefaultsMotchillPlaybackPositionStore()
+        _ = PhucTvLogger.shared
+        apiClient = PhucTvAPIClient(configuration: configuration)
+        repository = DefaultPhucTvRepository(apiClient: apiClient)
+        likedMovieStore = UserDefaultsPhucTvLikedMovieStore()
+        playbackPositionStore = UserDefaultsPhucTvPlaybackPositionStore()
     }
 }

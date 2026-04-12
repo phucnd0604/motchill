@@ -11,8 +11,8 @@ struct PlayerView: View {
         episodeID: Int,
         movieTitle: String,
         episodeLabel: String,
-        repository: MotchillRepository,
-        playbackPositionStore: MotchillPlaybackPositionStoring,
+        repository: PhucTvRepository,
+        playbackPositionStore: PhucTvPlaybackPositionStoring,
         router: AppRouter
     ) {
         _viewModel = State(
@@ -41,7 +41,11 @@ struct PlayerView: View {
                 guard shouldLoadOnAppear else { return }
                 await viewModel.load()
             }
+            .onAppear {
+                ScreenIdeManager.shared.disableAutoLock()
+            }
             .onDisappear {
+                ScreenIdeManager.shared.disableAutoLock()
                 Task {
                     await viewModel.persistProgress()
                     viewModel.stop()
@@ -117,6 +121,19 @@ private struct PlayerScreen: View {
                 }
             }
         }
+        .gesture(
+            SpatialTapGesture(count: 2)
+                .onEnded { value in
+                    let x = value.location.x
+                    let screenWidth = UIScreen.main.bounds.width
+                    
+                    if x < screenWidth / 3 {
+                        viewModel.seek(by: -viewModel.seekStepMillis)
+                    } else if x > screenWidth * 0.75 {
+                        viewModel.seek(by: viewModel.seekStepMillis)
+                    }
+                }
+        )
         .onTapGesture {
             viewModel.handleOverlayTap()
         }

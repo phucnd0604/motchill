@@ -1,12 +1,12 @@
 import Foundation
 
 enum DetailMockData {
-    static let movie: MotchillMovieCard = HomeMockData.loadedSections[0].products[0]
+    static let movie: PhucTvMovieCard = HomeMockData.loadedSections[0].products[0]
 
-    static let detail: MotchillMovieDetail = {
+    static let detail: PhucTvMovieDetail = {
         let base = movie
-        return MotchillMovieDetail(
-            movie: MotchillMovieCard(
+        return PhucTvMovieDetail(
+            movie: PhucTvMovieCard(
                 id: base.id,
                 name: base.name,
                 otherName: base.otherName,
@@ -44,23 +44,23 @@ enum DetailMockData {
             ),
             relatedMovies: Array(HomeMockData.loadedSections[1].products.prefix(3)),
             countries: [
-                MotchillSimpleLabel(id: 1, name: "United States", link: "us", displayColumn: 1),
-                MotchillSimpleLabel(id: 2, name: "United Kingdom", link: "uk", displayColumn: 1)
+                PhucTvSimpleLabel(id: 1, name: "United States", link: "us", displayColumn: 1),
+                PhucTvSimpleLabel(id: 2, name: "United Kingdom", link: "uk", displayColumn: 1)
             ],
             categories: [
-                MotchillSimpleLabel(id: 10, name: "Sci-Fi", link: "sci-fi", displayColumn: 1),
-                MotchillSimpleLabel(id: 11, name: "Adventure", link: "adventure", displayColumn: 1),
-                MotchillSimpleLabel(id: 12, name: "Drama", link: "drama", displayColumn: 1)
+                PhucTvSimpleLabel(id: 10, name: "Sci-Fi", link: "sci-fi", displayColumn: 1),
+                PhucTvSimpleLabel(id: 11, name: "Adventure", link: "adventure", displayColumn: 1),
+                PhucTvSimpleLabel(id: 12, name: "Drama", link: "drama", displayColumn: 1)
             ],
             episodes: [
-                MotchillMovieEpisode(id: 1, episodeNumber: "1", name: "Episode 1", fullLink: "episode-1", status: "1", type: "sub"),
-                MotchillMovieEpisode(id: 2, episodeNumber: "2", name: "Episode 2", fullLink: "episode-2", status: "1", type: "sub"),
-                MotchillMovieEpisode(id: 3, episodeNumber: "3", name: "Episode 3", fullLink: "episode-3", status: "1", type: "sub")
+                PhucTvMovieEpisode(id: 1, episodeNumber: "1", name: "Episode 1", fullLink: "episode-1", status: "1", type: "sub"),
+                PhucTvMovieEpisode(id: 2, episodeNumber: "2", name: "Episode 2", fullLink: "episode-2", status: "1", type: "sub"),
+                PhucTvMovieEpisode(id: 3, episodeNumber: "3", name: "Episode 3", fullLink: "episode-3", status: "1", type: "sub")
             ]
         )
     }()
 
-    static let emptyDetail = MotchillMovieDetail(
+    static let emptyDetail = PhucTvMovieDetail(
         movie: movie,
         relatedMovies: [],
         countries: [],

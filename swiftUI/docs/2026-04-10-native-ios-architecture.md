@@ -2,7 +2,7 @@
 
 ## Overview
 
-The iOS app follows the same product shape as the Android version: a single native client that talks directly to the public Motchill API, maps the API into stable domain models, and drives feature state through small feature-owned state holders.
+The iOS app follows the same product shape as the Android version: a single native client that talks directly to the public PhucTv API, maps the API into stable domain models, and drives feature state through small feature-owned state holders.
 
 The architecture is deliberately boring and explicit. That keeps debugging simple and makes it easier to reason about parity between platforms.
 

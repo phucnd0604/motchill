@@ -1,8 +1,8 @@
 import Foundation
 
 func episodeSecondaryText(
-    episode: MotchillMovieEpisode,
-    progress: MotchillPlaybackProgressSnapshot?
+    episode: PhucTvMovieEpisode,
+    progress: PhucTvPlaybackProgressSnapshot?
 ) -> String {
     let metadata = [
         normalizedEpisodeTypeLabel(episode.type),
@@ -20,7 +20,7 @@ func episodeSecondaryText(
     return metadata.joined(separator: " • ") + " • " + playback
 }
 
-func shouldShowEpisodeProgressBar(_ progress: MotchillPlaybackProgressSnapshot?) -> Bool {
+func shouldShowEpisodeProgressBar(_ progress: PhucTvPlaybackProgressSnapshot?) -> Bool {
     guard let progress else { return false }
     return progress.durationMillis > 0 && progress.positionMillis > 0
 }
@@ -67,7 +67,7 @@ private func normalizedEpisodeStatusLabel(_ rawValue: String) -> String? {
     return nil
 }
 
-private func playbackStatusLabel(_ progress: MotchillPlaybackProgressSnapshot?) -> String {
+private func playbackStatusLabel(_ progress: PhucTvPlaybackProgressSnapshot?) -> String {
     guard let progress, progress.durationMillis > 0 else {
         return "Chưa xem"
     }

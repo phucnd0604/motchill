@@ -141,7 +141,7 @@ private struct HomeHeroStage: View {
 }
 
 private struct HomeHeroSlideItem: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
     let onTap: () -> Void
 
     var body: some View {
@@ -215,7 +215,7 @@ private struct HomeHeroSlideItem: View {
 }
 
 private struct HomeHeroBackdrop: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
 
     var body: some View {
         ZStack {
@@ -257,7 +257,7 @@ private struct HomeHeroBackdrop: View {
 }
 
 private struct HomeMetaRow: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
 
     var body: some View {
         HStack(spacing: 8) {
@@ -307,7 +307,7 @@ private struct HomeBackground: View {
 }
 
 private struct HomeSectionList: View {
-    let sections: [MotchillHomeSection]
+    let sections: [PhucTvHomeSection]
     let router: AppRouter
 
     var body: some View {
@@ -323,7 +323,7 @@ private struct HomeSectionList: View {
 }
 
 private struct HomeSectionRail: View {
-    let section: MotchillHomeSection
+    let section: PhucTvHomeSection
     let router: AppRouter
 
     var body: some View {
@@ -444,7 +444,7 @@ private struct HomeStatusCard: View {
     }
 }
 
-private func movieSummary(for movie: MotchillMovieCard) -> String {
+private func movieSummary(for movie: PhucTvMovieCard) -> String {
     let candidates = [
         movie.description,
         movie.moreInfo,

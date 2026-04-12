@@ -1,9 +1,9 @@
 //
 //  HomeIpadComponents.swift
-//  MotchillSwiftUI
+//  PhucTvSwiftUI
 //
 //  Created by Phucnd on 11/4/26.
-//  Copyright © 2026 Motchill. All rights reserved.
+//  Copyright © 2026 PhucTv. All rights reserved.
 //
 import Kingfisher
 import SwiftUI
@@ -99,7 +99,7 @@ private func openTrailer(_ trailer: String) {
 
 private struct HomeIpadLoadedContent: View {
     @Bindable var viewModel: HomeViewModel
-    let heroMovies: [MotchillMovieCard]
+    let heroMovies: [PhucTvMovieCard]
     let router: AppRouter
 
     private var selectedHeroID: Binding<Int?> {
@@ -171,7 +171,7 @@ private struct HomeIpadLoadedContent: View {
 }
 
 private struct HomeIpadHeroCardView: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
     let onWatchNow: () -> Void
     let onTrailer: () -> Void
 
@@ -318,7 +318,7 @@ private struct HomeIpadBackground: View {
 }
 
 private struct HomeIpadHeroBackdrop: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
 
     var body: some View {
         ZStack {
@@ -349,7 +349,7 @@ private struct HomeIpadHeroBackdrop: View {
 }
 
 private struct HomeIpadMetadataRow: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
 
     var body: some View {
         HStack(spacing: 14) {
@@ -375,7 +375,7 @@ private struct HomeIpadMetadataRow: View {
 }
 
 private struct HomeIpadCreditRow: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -414,7 +414,7 @@ private struct HomeIpadCreditLine: View {
 }
 
 private struct HomeIpadPosterCard: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -451,8 +451,8 @@ private struct HomeIpadPrimaryAction: View {
 }
 
 private struct HomeIpadIndicator: View {
-    @Binding var selectedMovie: MotchillMovieCard?
-    let items: [MotchillMovieCard]
+    @Binding var selectedMovie: PhucTvMovieCard?
+    let items: [PhucTvMovieCard]
 
     var body: some View {
         TabSegmentedView(
@@ -580,7 +580,7 @@ private struct HomeIpadBadge: View {
     }
 }
 
-private func movieSummary(for movie: MotchillMovieCard) -> String {
+private func movieSummary(for movie: PhucTvMovieCard) -> String {
     let candidates = [
         movie.description,
         movie.moreInfo,

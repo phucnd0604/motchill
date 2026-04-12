@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MovieCardView: View {
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
     let onTap: () -> Void
     
     var body: some View {

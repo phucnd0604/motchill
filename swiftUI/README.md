@@ -1,6 +1,6 @@
-# Motchill SwiftUI
+# PhucTv SwiftUI
 
-Native iOS workspace for Motchill.
+Native iOS workspace for PhucTv.
 
 ## Phase 0
 

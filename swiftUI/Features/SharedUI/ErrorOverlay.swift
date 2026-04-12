@@ -1,9 +1,9 @@
 //
 //  ErrorOverlay.swift
-//  MotchillSwiftUI
+//  PhucTvSwiftUI
 //
 //  Created by Phucnd on 12/4/26.
-//  Copyright © 2026 Motchill. All rights reserved.
+//  Copyright © 2026 PhucTv. All rights reserved.
 //
 
 import SwiftUI
@@ -206,7 +206,7 @@ struct ErrorOverlay: View {
     }
 
     private var brand: some View {
-        Text("MOTCHILL")
+        Text("PHUCTV")
             .font(.system(size: 22, weight: .black, design: .rounded))
             .italic()
             .tracking(1.6)

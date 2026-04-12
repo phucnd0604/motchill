@@ -2,10 +2,10 @@ import Foundation
 import UIKit
 
 struct AppConfiguration {
-    let appName: String = "Motchill"
-    private let remoteConfigStore: MotchillRemoteConfigStoring
+    let appName: String = "PhucTv"
+    private let remoteConfigStore: PhucTvRemoteConfigStoring
 
-    init(remoteConfigStore: MotchillRemoteConfigStoring = MotchillRemoteConfigStore.shared) {
+    init(remoteConfigStore: PhucTvRemoteConfigStoring = PhucTvRemoteConfigStore.shared) {
         self.remoteConfigStore = remoteConfigStore
     }
 
@@ -25,7 +25,7 @@ struct AppConfiguration {
     }
     var requestHeaders: [String: String] {
         [
-            "User-Agent": "Mozilla/5.0 (MotchillSwiftUI)",
+            "User-Agent": "Mozilla/5.0 (PhucTvSwiftUI)",
             "Accept": "application/json,text/plain,*/*",
         ]
     }

@@ -5,13 +5,13 @@ import Observation
 @Observable
 final class HomeViewModel {
     @ObservationIgnored
-    private let repository: MotchillRepository
+    private let repository: PhucTvRepository
     @ObservationIgnored
-    private let remoteConfigClient: MotchillRemoteConfigLoading
+    private let remoteConfigClient: PhucTvRemoteConfigLoading
     @ObservationIgnored
-    private let remoteConfigStore: MotchillRemoteConfigStoring
-    var selectedMovie: MotchillMovieCard?
-    var selectedSection: MotchillHomeSection? {
+    private let remoteConfigStore: PhucTvRemoteConfigStoring
+    var selectedMovie: PhucTvMovieCard?
+    var selectedSection: PhucTvHomeSection? {
         didSet {
             guard let selectedSection = selectedSection else {
                 selectedMovie = nil
@@ -44,10 +44,10 @@ final class HomeViewModel {
     }
 
     init(
-        repository: MotchillRepository,
+        repository: PhucTvRepository,
         state: HomeScreenState = .loading,
-        remoteConfigClient: MotchillRemoteConfigLoading = MotchillRemoteConfigClient(),
-        remoteConfigStore: MotchillRemoteConfigStoring = MotchillRemoteConfigStore.shared
+        remoteConfigClient: PhucTvRemoteConfigLoading = PhucTvRemoteConfigClient(),
+        remoteConfigStore: PhucTvRemoteConfigStoring = PhucTvRemoteConfigStore.shared
     ) {
         self.repository = repository
         self.state = state
@@ -62,19 +62,19 @@ final class HomeViewModel {
         return nil
     }
 
-    var sections: [MotchillHomeSection] {
+    var sections: [PhucTvHomeSection] {
         loadedContent?.sections ?? []
     }
 
-    var heroSection: MotchillHomeSection? {
+    var heroSection: PhucTvHomeSection? {
         sections.first(where: { $0.key == "slide" }) ?? sections.first
     }
 
-    var heroMovies: [MotchillMovieCard] {
+    var heroMovies: [PhucTvMovieCard] {
         Array(heroSection?.products.prefix(6) ?? [])
     }
 
-    var contentSections: [MotchillHomeSection] {
+    var contentSections: [PhucTvHomeSection] {
         guard sections.contains(where: { $0.key == "slide" }) else {
             return sections
         }
@@ -105,7 +105,7 @@ final class HomeViewModel {
                 }
             }
         } catch {
-            MotchillLogger.shared.error(
+            PhucTvLogger.shared.error(
                 error,
                 message: "Home load failed",
                 metadata: [
@@ -149,26 +149,26 @@ final class HomeViewModel {
     }
 }
 
-private struct PreviewHomeRepository: MotchillRepository {
-    let sections: [MotchillHomeSection]
+private struct PreviewHomeRepository: PhucTvRepository {
+    let sections: [PhucTvHomeSection]
 
-    func loadHome() async throws -> [MotchillHomeSection] {
+    func loadHome() async throws -> [PhucTvHomeSection] {
         sections
     }
 
-    func loadNavbar() async throws -> [MotchillNavbarItem] {
+    func loadNavbar() async throws -> [PhucTvNavbarItem] {
         []
     }
 
-    func loadDetail(slug: String) async throws -> MotchillMovieDetail {
+    func loadDetail(slug: String) async throws -> PhucTvMovieDetail {
         throw NSError(domain: "PreviewHomeRepository", code: 1)
     }
 
-    func loadPreview(slug: String) async throws -> MotchillMovieDetail {
+    func loadPreview(slug: String) async throws -> PhucTvMovieDetail {
         throw NSError(domain: "PreviewHomeRepository", code: 1)
     }
 
-    func loadSearchFilters() async throws -> MotchillSearchFilterData {
+    func loadSearchFilters() async throws -> PhucTvSearchFilterData {
         throw NSError(domain: "PreviewHomeRepository", code: 1)
     }
 
@@ -182,7 +182,7 @@ private struct PreviewHomeRepository: MotchillRepository {
         is4k: Bool,
         search: String,
         pageNumber: Int
-    ) async throws -> MotchillSearchResults {
+    ) async throws -> PhucTvSearchResults {
         throw NSError(domain: "PreviewHomeRepository", code: 1)
     }
 
@@ -190,11 +190,11 @@ private struct PreviewHomeRepository: MotchillRepository {
         movieID: Int,
         episodeID: Int,
         server: Int
-    ) async throws -> [MotchillPlaySource] {
+    ) async throws -> [PhucTvPlaySource] {
         throw NSError(domain: "PreviewHomeRepository", code: 1)
     }
 
-    func loadPopupAd() async throws -> MotchillPopupAdConfig? {
+    func loadPopupAd() async throws -> PhucTvPopupAdConfig? {
         nil
     }
 }

@@ -1,13 +1,13 @@
 import Foundation
 
 struct HomeFeedContent: Equatable {
-    let sections: [MotchillHomeSection]
+    let sections: [PhucTvHomeSection]
 
-    var heroSection: MotchillHomeSection? {
+    var heroSection: PhucTvHomeSection? {
         sections.first(where: { $0.key == "slide" }) ?? sections.first
     }
 
-    var contentSections: [MotchillHomeSection] {
+    var contentSections: [PhucTvHomeSection] {
         guard sections.contains(where: { $0.key == "slide" }) else {
             return sections
         }
@@ -15,7 +15,7 @@ struct HomeFeedContent: Equatable {
         return sections.filter { $0.key != "slide" }
     }
     
-    func section(withKey key: String) -> MotchillHomeSection? {
+    func section(withKey key: String) -> PhucTvHomeSection? {
         sections.first(where: { $0.key == key })
     }    
 }

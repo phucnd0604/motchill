@@ -106,7 +106,7 @@ struct DetailScreen: View {
         openExternalURL(viewModel.trailerURL())
     }
 
-    private func openEpisode(_ episode: MotchillMovieEpisode) {
+    private func openEpisode(_ episode: PhucTvMovieEpisode) {
         router.push(
             .player(
                 movieID: viewModel.detail?.id ?? viewModel.movie.id,
@@ -123,7 +123,7 @@ private struct DetailLoadedContent: View {
     let router: AppRouter
     let onToggleLike: () -> Void
     let onOpenTrailer: () -> Void
-    let onOpenEpisode: (MotchillMovieEpisode) -> Void
+    let onOpenEpisode: (PhucTvMovieEpisode) -> Void
 
     var body: some View {
         ScrollView {
@@ -325,11 +325,11 @@ private struct DetailTabStrip: View {
 @MainActor
 @ViewBuilder
 private func DetailTabBody(
-    detail: MotchillMovieDetail?,
+    detail: PhucTvMovieDetail?,
     selectedTab: DetailSectionTab,
-    episodeProgressById: [Int: MotchillPlaybackProgressSnapshot],
-    onOpenEpisode: @escaping (MotchillMovieEpisode) -> Void,
-    onOpenDetail: @escaping (MotchillMovieCard) -> Void,
+    episodeProgressById: [Int: PhucTvPlaybackProgressSnapshot],
+    onOpenEpisode: @escaping (PhucTvMovieEpisode) -> Void,
+    onOpenDetail: @escaping (PhucTvMovieCard) -> Void,
     onOpenSearch: @escaping () -> Void
 ) -> some View {
     if let detail {
@@ -351,9 +351,9 @@ private func DetailTabBody(
 }
 
 private struct DetailEpisodesTab: View {
-    let detail: MotchillMovieDetail
-    let episodeProgressById: [Int: MotchillPlaybackProgressSnapshot]
-    let onOpenEpisode: (MotchillMovieEpisode) -> Void
+    let detail: PhucTvMovieDetail
+    let episodeProgressById: [Int: PhucTvPlaybackProgressSnapshot]
+    let onOpenEpisode: (PhucTvMovieEpisode) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -381,7 +381,7 @@ private struct DetailEpisodesTab: View {
 }
 
 private struct DetailSynopsisTab: View {
-    let detail: MotchillMovieDetail
+    let detail: PhucTvMovieDetail
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -395,7 +395,7 @@ private struct DetailSynopsisTab: View {
 }
 
 private struct DetailInformationTab: View {
-    let detail: MotchillMovieDetail
+    let detail: PhucTvMovieDetail
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -426,7 +426,7 @@ private struct DetailInformationTab: View {
 }
 
 private struct DetailClassificationTab: View {
-    let detail: MotchillMovieDetail
+    let detail: PhucTvMovieDetail
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -446,7 +446,7 @@ private struct DetailClassificationTab: View {
 }
 
 private struct DetailGalleryTab: View {
-    let detail: MotchillMovieDetail
+    let detail: PhucTvMovieDetail
 
     var body: some View {
         let images = Array(Set(detail.photoUrls + detail.previewPhotoUrls)).filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -472,8 +472,8 @@ private struct DetailGalleryTab: View {
 }
 
 private struct DetailRelatedTab: View {
-    let detail: MotchillMovieDetail
-    let onOpenDetail: (MotchillMovieCard) -> Void
+    let detail: PhucTvMovieDetail
+    let onOpenDetail: (PhucTvMovieCard) -> Void
     let onOpenSearch: () -> Void
 
     var body: some View {
@@ -512,8 +512,8 @@ private struct DetailRelatedTab: View {
 }
 
 private struct DetailEpisodeRow: View {
-    let episode: MotchillMovieEpisode
-    let progress: MotchillPlaybackProgressSnapshot?
+    let episode: PhucTvMovieEpisode
+    let progress: PhucTvPlaybackProgressSnapshot?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {

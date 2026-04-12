@@ -10,7 +10,7 @@ struct HomeView: View {
     }
     
     init(
-        repository: MotchillRepository,
+        repository: PhucTvRepository,
         router: AppRouter
     ) {
         _viewModel = State(initialValue: HomeViewModel(repository: repository))

@@ -27,7 +27,7 @@ enum DetailScreenState: Equatable {
     case error(message: String)
 }
 
-extension MotchillMovieDetail {
+extension PhucTvMovieDetail {
     var availableTabs: [DetailSectionTab] {
         var tabs: [DetailSectionTab] = []
         if !episodes.isEmpty { tabs.append(.episodes) }

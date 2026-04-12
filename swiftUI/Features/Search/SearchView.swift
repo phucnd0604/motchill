@@ -7,8 +7,8 @@ struct SearchView: View {
     @State private var activePicker: SearchPickerKind?
 
     init(
-        repository: MotchillRepository,
-        likedMovieStore: MotchillLikedMovieStoring,
+        repository: PhucTvRepository,
+        likedMovieStore: PhucTvLikedMovieStoring,
         router: AppRouter,
         routeInput: SearchRouteInput = SearchRouteInput()
     ) {
@@ -243,7 +243,7 @@ private struct SearchFilterStrip: View {
 
 private struct SearchResultsSection: View {
     let uiState: SearchUIState
-    let onOpenDetail: (MotchillMovieCard) -> Void
+    let onOpenDetail: (PhucTvMovieCard) -> Void
     let onPrevious: () -> Void
     let onNext: () -> Void
 
@@ -366,22 +366,22 @@ private struct SearchPickerSheet: View {
                 likedMovieStore: PreviewLikedMovieStore(),
                 uiState: SearchUIState()
                     .withLoadedFilters(
-                        MotchillSearchFilterData(
+                        PhucTvSearchFilterData(
                             categories: [
-                                MotchillSearchFacetOption(id: 1, name: "Action", slug: "action"),
-                                MotchillSearchFacetOption(id: 2, name: "Thriller", slug: "thriller"),
+                                PhucTvSearchFacetOption(id: 1, name: "Action", slug: "action"),
+                                PhucTvSearchFacetOption(id: 2, name: "Thriller", slug: "thriller"),
                             ],
                             countries: [
-                                MotchillSearchFacetOption(id: 10, name: "All Regions", slug: "all-regions"),
-                                MotchillSearchFacetOption(id: 11, name: "Korea", slug: "korea"),
+                                PhucTvSearchFacetOption(id: 10, name: "All Regions", slug: "all-regions"),
+                                PhucTvSearchFacetOption(id: 11, name: "Korea", slug: "korea"),
                             ]
                         )
                     )
                     .withLikedMovies(Array(SearchPreviewData.movies.prefix(3)))
                     .withSearchResults(
-                        MotchillSearchResults(
+                        PhucTvSearchResults(
                             records: SearchPreviewData.movies,
-                            pagination: MotchillSearchPagination(pageIndex: 1, pageSize: 12, pageCount: 2, totalRecords: 18)
+                            pagination: PhucTvSearchPagination(pageIndex: 1, pageSize: 12, pageCount: 2, totalRecords: 18)
                         ),
                         pageNumber: 1
                     )
@@ -391,12 +391,12 @@ private struct SearchPickerSheet: View {
     }
 }
 
-private struct PreviewSearchRepository: MotchillRepository {
-    func loadHome() async throws -> [MotchillHomeSection] { [] }
-    func loadNavbar() async throws -> [MotchillNavbarItem] { [] }
-    func loadDetail(slug: String) async throws -> MotchillMovieDetail { throw NSError(domain: "preview", code: 1) }
-    func loadPreview(slug: String) async throws -> MotchillMovieDetail { throw NSError(domain: "preview", code: 1) }
-    func loadSearchFilters() async throws -> MotchillSearchFilterData { .init(categories: [], countries: []) }
+private struct PreviewSearchRepository: PhucTvRepository {
+    func loadHome() async throws -> [PhucTvHomeSection] { [] }
+    func loadNavbar() async throws -> [PhucTvNavbarItem] { [] }
+    func loadDetail(slug: String) async throws -> PhucTvMovieDetail { throw NSError(domain: "preview", code: 1) }
+    func loadPreview(slug: String) async throws -> PhucTvMovieDetail { throw NSError(domain: "preview", code: 1) }
+    func loadSearchFilters() async throws -> PhucTvSearchFilterData { .init(categories: [], countries: []) }
     func loadSearchResults(
         categoryId: Int?,
         countryId: Int?,
@@ -407,22 +407,22 @@ private struct PreviewSearchRepository: MotchillRepository {
         is4k: Bool,
         search: String,
         pageNumber: Int
-    ) async throws -> MotchillSearchResults {
+    ) async throws -> PhucTvSearchResults {
         .init(records: SearchPreviewData.movies, pagination: .init(pageIndex: 1, pageSize: 12, pageCount: 1, totalRecords: SearchPreviewData.movies.count))
     }
-    func loadEpisodeSources(movieID: Int, episodeID: Int, server: Int) async throws -> [MotchillPlaySource] { [] }
-    func loadPopupAd() async throws -> MotchillPopupAdConfig? { nil }
+    func loadEpisodeSources(movieID: Int, episodeID: Int, server: Int) async throws -> [PhucTvPlaySource] { [] }
+    func loadPopupAd() async throws -> PhucTvPopupAdConfig? { nil }
 }
 
-private actor PreviewLikedMovieStore: MotchillLikedMovieStoring {
-    func loadMovies() async throws -> [MotchillMovieCard] { Array(SearchPreviewData.movies.prefix(2)) }
+private actor PreviewLikedMovieStore: PhucTvLikedMovieStoring {
+    func loadMovies() async throws -> [PhucTvMovieCard] { Array(SearchPreviewData.movies.prefix(2)) }
     func loadIDs() async throws -> Set<Int> { Set(SearchPreviewData.movies.prefix(2).map(\.id)) }
     func isLiked(movieID: Int) async throws -> Bool { movieID == SearchPreviewData.movies.first?.id }
-    func toggle(movie: MotchillMovieCard) async throws -> [MotchillMovieCard] { [movie] }
+    func toggle(movie: PhucTvMovieCard) async throws -> [PhucTvMovieCard] { [movie] }
 }
 
 private enum SearchPreviewData {
-    static let movies: [MotchillMovieCard] = [
+    static let movies: [PhucTvMovieCard] = [
         previewMovie(id: 1, title: "Neon Genesis: Tokyo", subtitle: "2024 • Sci-Fi Thriller", rating: "8.4"),
         previewMovie(id: 2, title: "Velocity Horizon", subtitle: "2023 • Action", rating: "7.9"),
         previewMovie(id: 3, title: "The Last Whisper", subtitle: "2024 • Mystery", rating: "9.1"),
@@ -431,8 +431,8 @@ private enum SearchPreviewData {
         previewMovie(id: 6, title: "Shadow Grove", subtitle: "2024 • Horror", rating: "6.8"),
     ]
 
-    static func previewMovie(id: Int, title: String, subtitle: String, rating: String) -> MotchillMovieCard {
-        MotchillMovieCard(
+    static func previewMovie(id: Int, title: String, subtitle: String, rating: String) -> PhucTvMovieCard {
+        PhucTvMovieCard(
             id: id,
             name: title,
             otherName: subtitle,

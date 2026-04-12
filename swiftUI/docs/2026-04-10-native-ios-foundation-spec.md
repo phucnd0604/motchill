@@ -2,7 +2,7 @@
 
 ## Summary
 
-This document defines the first native iOS version of Motchill in `swiftUI/`. The goal is to mirror the current Android architecture and product behavior as closely as practical while keeping the iOS codebase easy to extend in later phases.
+This document defines the first native iOS version of PhucTv in `swiftUI/`. The goal is to mirror the current Android architecture and product behavior as closely as practical while keeping the iOS codebase easy to extend in later phases.
 
 The first implementation phase stays intentionally small:
 

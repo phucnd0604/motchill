@@ -44,7 +44,7 @@ The app now has a real data foundation built in the `swiftUI/` workspace, with a
 
 Phase 2 should build on this foundation without reworking the transport layer:
 
-- reuse the `MotchillAPIClient` and DTO/domain mapping path
+- reuse the `PhucTvAPIClient` and DTO/domain mapping path
 - keep the repository contract stable
 - add the home screen state flow and rendering first
 - keep navigation parity with Android at the route level, not by copying view structure

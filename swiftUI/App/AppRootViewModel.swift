@@ -3,7 +3,7 @@ import Foundation
 
 @Observable
 final class AppRootViewModel {
-    let heroTitle = "Motchill SwiftUI"
+    let heroTitle = "PhucTv SwiftUI"
     let heroSubtitle = "Native iOS shell, phase 0."
     let heroDetail = "MVVM with @Observable, Kingfisher for images, and a structure that mirrors the Android foundation."
 

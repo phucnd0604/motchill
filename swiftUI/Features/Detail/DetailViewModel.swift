@@ -5,25 +5,25 @@ import Observation
 @Observable
 final class DetailViewModel {
     @ObservationIgnored
-    private let repository: MotchillRepository
+    private let repository: PhucTvRepository
     @ObservationIgnored
-    private let likedMovieStore: MotchillLikedMovieStoring
+    private let likedMovieStore: PhucTvLikedMovieStoring
     @ObservationIgnored
-    private let playbackPositionStore: MotchillPlaybackPositionStoring
+    private let playbackPositionStore: PhucTvPlaybackPositionStoring
 
-    let movie: MotchillMovieCard
+    let movie: PhucTvMovieCard
 
     var state: DetailScreenState = .idle
-    var detail: MotchillMovieDetail?
+    var detail: PhucTvMovieDetail?
     var selectedTab: DetailSectionTab?
     var isLiked = false
-    var episodeProgressById: [Int: MotchillPlaybackProgressSnapshot] = [:]
+    var episodeProgressById: [Int: PhucTvPlaybackProgressSnapshot] = [:]
 
     init(
-        movie: MotchillMovieCard,
-        repository: MotchillRepository,
-        likedMovieStore: MotchillLikedMovieStoring,
-        playbackPositionStore: MotchillPlaybackPositionStoring
+        movie: PhucTvMovieCard,
+        repository: PhucTvRepository,
+        likedMovieStore: PhucTvLikedMovieStoring,
+        playbackPositionStore: PhucTvPlaybackPositionStoring
     ) {
         self.movie = movie
         self.repository = repository
@@ -31,7 +31,7 @@ final class DetailViewModel {
         self.playbackPositionStore = playbackPositionStore
     }
 
-    var movieDetail: MotchillMovieDetail? {
+    var movieDetail: PhucTvMovieDetail? {
         detail
     }
 
@@ -92,7 +92,7 @@ final class DetailViewModel {
             self.episodeProgressById = await loadEpisodeProgress(for: detail)
             state = .loaded
         } catch {
-            MotchillLogger.shared.error(
+            PhucTvLogger.shared.error(
                 error,
                 message: "Detail load failed",
                 metadata: [
@@ -119,7 +119,7 @@ final class DetailViewModel {
             _ = try await likedMovieStore.toggle(movie: detail.movie)
             isLiked = try await likedMovieStore.isLiked(movieID: detail.id)
         } catch {
-            MotchillLogger.shared.error(
+            PhucTvLogger.shared.error(
                 error,
                 message: "Detail toggleLike failed",
                 metadata: [
@@ -143,8 +143,8 @@ final class DetailViewModel {
         return trailer
     }
 
-    private func loadEpisodeProgress(for detail: MotchillMovieDetail) async -> [Int: MotchillPlaybackProgressSnapshot] {
-        var result: [Int: MotchillPlaybackProgressSnapshot] = [:]
+    private func loadEpisodeProgress(for detail: PhucTvMovieDetail) async -> [Int: PhucTvPlaybackProgressSnapshot] {
+        var result: [Int: PhucTvPlaybackProgressSnapshot] = [:]
         for episode in detail.episodes {
             if let progress = try? await playbackPositionStore.load(movieID: detail.id, episodeID: episode.id) {
                 result[episode.id] = progress
@@ -181,11 +181,11 @@ final class DetailViewModel {
     }
 }
 
-private struct PreviewDetailRepository: MotchillRepository {
-    let detail: MotchillMovieDetail?
+private struct PreviewDetailRepository: PhucTvRepository {
+    let detail: PhucTvMovieDetail?
     let error: Error?
 
-    init(detail: MotchillMovieDetail) {
+    init(detail: PhucTvMovieDetail) {
         self.detail = detail
         self.error = nil
     }
@@ -195,14 +195,14 @@ private struct PreviewDetailRepository: MotchillRepository {
         self.error = error
     }
 
-    func loadHome() async throws -> [MotchillHomeSection] { [] }
-    func loadNavbar() async throws -> [MotchillNavbarItem] { [] }
-    func loadDetail(slug: String) async throws -> MotchillMovieDetail {
+    func loadHome() async throws -> [PhucTvHomeSection] { [] }
+    func loadNavbar() async throws -> [PhucTvNavbarItem] { [] }
+    func loadDetail(slug: String) async throws -> PhucTvMovieDetail {
         if let error { throw error }
         return detail ?? DetailMockData.emptyDetail
     }
-    func loadPreview(slug: String) async throws -> MotchillMovieDetail { try await loadDetail(slug: slug) }
-    func loadSearchFilters() async throws -> MotchillSearchFilterData { MotchillSearchFilterData(categories: [], countries: []) }
+    func loadPreview(slug: String) async throws -> PhucTvMovieDetail { try await loadDetail(slug: slug) }
+    func loadSearchFilters() async throws -> PhucTvSearchFilterData { PhucTvSearchFilterData(categories: [], countries: []) }
     func loadSearchResults(
         categoryId: Int?,
         countryId: Int?,
@@ -213,27 +213,27 @@ private struct PreviewDetailRepository: MotchillRepository {
         is4k: Bool,
         search: String,
         pageNumber: Int
-    ) async throws -> MotchillSearchResults {
-        MotchillSearchResults(records: [], pagination: MotchillSearchPagination(pageIndex: 1, pageSize: 1, pageCount: 1, totalRecords: 0))
+    ) async throws -> PhucTvSearchResults {
+        PhucTvSearchResults(records: [], pagination: PhucTvSearchPagination(pageIndex: 1, pageSize: 1, pageCount: 1, totalRecords: 0))
     }
     func loadEpisodeSources(
         movieID: Int,
         episodeID: Int,
         server: Int
-    ) async throws -> [MotchillPlaySource] { [] }
-    func loadPopupAd() async throws -> MotchillPopupAdConfig? { nil }
+    ) async throws -> [PhucTvPlaySource] { [] }
+    func loadPopupAd() async throws -> PhucTvPopupAdConfig? { nil }
 }
 
-private struct PreviewLikedStore: MotchillLikedMovieStoring {
+private struct PreviewLikedStore: PhucTvLikedMovieStoring {
     let isLiked: Bool
 
-    func loadMovies() async throws -> [MotchillMovieCard] { isLiked ? [DetailMockData.movie] : [] }
+    func loadMovies() async throws -> [PhucTvMovieCard] { isLiked ? [DetailMockData.movie] : [] }
     func loadIDs() async throws -> Set<Int> { isLiked ? [DetailMockData.movie.id] : [] }
     func isLiked(movieID: Int) async throws -> Bool { isLiked && movieID == DetailMockData.movie.id }
-    func toggle(movie: MotchillMovieCard) async throws -> [MotchillMovieCard] { [movie] }
+    func toggle(movie: PhucTvMovieCard) async throws -> [PhucTvMovieCard] { [movie] }
 }
 
-private struct PreviewPlaybackStore: MotchillPlaybackPositionStoring {
+private struct PreviewPlaybackStore: PhucTvPlaybackPositionStoring {
     func save(
         movieID: Int,
         episodeID: Int,
@@ -242,8 +242,8 @@ private struct PreviewPlaybackStore: MotchillPlaybackPositionStoring {
     ) async throws {
     }
 
-    func load(movieID: Int, episodeID: Int) async throws -> MotchillPlaybackProgressSnapshot? {
-        MotchillPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000)
+    func load(movieID: Int, episodeID: Int) async throws -> PhucTvPlaybackProgressSnapshot? {
+        PhucTvPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000)
     }
 }
 

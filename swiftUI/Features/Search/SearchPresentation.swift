@@ -4,22 +4,22 @@ let searchPageSize = 12
 let defaultSearchOrderBy = "UpdateOn"
 
 let searchOrderOptions = [
-    MotchillSearchChoice(value: "UpdateOn", label: "Mới Nhất"),
-    MotchillSearchChoice(value: "ViewNumber", label: "Lượt Xem"),
-    MotchillSearchChoice(value: "Year", label: "Năm Phát Hành"),
+    PhucTvSearchChoice(value: "UpdateOn", label: "Mới Nhất"),
+    PhucTvSearchChoice(value: "ViewNumber", label: "Lượt Xem"),
+    PhucTvSearchChoice(value: "Year", label: "Năm Phát Hành"),
 ]
 
 let searchTypeOptions = [
-    MotchillSearchChoice(value: "", label: "Tất cả"),
-    MotchillSearchChoice(value: "single", label: "Phim Lẻ"),
-    MotchillSearchChoice(value: "series", label: "Phim Bộ"),
+    PhucTvSearchChoice(value: "", label: "Tất cả"),
+    PhucTvSearchChoice(value: "single", label: "Phim Lẻ"),
+    PhucTvSearchChoice(value: "series", label: "Phim Bộ"),
 ]
 
-let searchYearOptions: [MotchillSearchChoice] = {
+let searchYearOptions: [PhucTvSearchChoice] = {
     let currentYear = Calendar.current.component(.year, from: Date())
     let years = stride(from: currentYear, through: 2010, by: -1)
-        .map { MotchillSearchChoice(value: "\($0)", label: "\($0)") }
-    return [MotchillSearchChoice(value: "", label: "Tất cả")] + years
+        .map { PhucTvSearchChoice(value: "\($0)", label: "\($0)") }
+    return [PhucTvSearchChoice(value: "", label: "Tất cả")] + years
 }()
 
 struct SearchRouteInput: Hashable, Sendable {
@@ -87,7 +87,7 @@ struct SearchUIState: Hashable, Sendable {
     var isLoading = true
     var isSearching = false
     var errorMessage: String?
-    var filters = MotchillSearchFilterData(categories: [], countries: [])
+    var filters = PhucTvSearchFilterData(categories: [], countries: [])
     var searchText = ""
     var searchInputValue = ""
     var selectedCategoryID: Int?
@@ -99,17 +99,17 @@ struct SearchUIState: Hashable, Sendable {
     var selectedYear = ""
     var selectedOrderBy = defaultSearchOrderBy
     var showLikedOnly = false
-    var likedMovies: [MotchillMovieCard] = []
+    var likedMovies: [PhucTvMovieCard] = []
     var likedMovieIDs: Set<Int> = []
-    var records: [MotchillMovieCard] = []
-    var pagination = MotchillSearchPagination(pageIndex: 0, pageSize: 0, pageCount: 0, totalRecords: 0)
+    var records: [PhucTvMovieCard] = []
+    var pagination = PhucTvSearchPagination(pageIndex: 0, pageSize: 0, pageCount: 0, totalRecords: 0)
     var pageNumber = 1
 
-    var likedFilteredMovies: [MotchillMovieCard] {
+    var likedFilteredMovies: [PhucTvMovieCard] {
         filterLikedMovies(movies: likedMovies, uiState: self)
     }
 
-    var visibleMovies: [MotchillMovieCard] {
+    var visibleMovies: [PhucTvMovieCard] {
         if showLikedOnly {
             return paginateMovies(movies: likedFilteredMovies, pageNumber: pageNumber, pageSize: searchPageSize).movies
         }
@@ -215,7 +215,7 @@ struct SearchUIState: Hashable, Sendable {
         if isLoading && visibleMovies.isEmpty {
             return .loading(
                 title: "Đang tải tìm kiếm",
-                message: "Motchill đang lấy bộ lọc và danh sách phim phù hợp.",
+                message: "PhucTv đang lấy bộ lọc và danh sách phim phù hợp.",
                 errorCode: "search_loading"
             )
         }
@@ -245,11 +245,11 @@ struct SearchUIState: Hashable, Sendable {
 }
 
 struct SearchPaginationSlice: Hashable, Sendable {
-    let movies: [MotchillMovieCard]
-    let pagination: MotchillSearchPagination
+    let movies: [PhucTvMovieCard]
+    let pagination: PhucTvSearchPagination
 }
 
-extension MotchillSearchFilterData {
+extension PhucTvSearchFilterData {
     func findPreset(slug: String) -> SearchPreset {
         let normalizedSlug = normalizeSearchSlug(slug)
         guard !normalizedSlug.isEmpty else { return SearchPreset() }
@@ -271,11 +271,11 @@ extension MotchillSearchFilterData {
         return SearchPreset()
     }
 
-    func categoryOptionsWithAll() -> [MotchillSearchFacetOption] {
+    func categoryOptionsWithAll() -> [PhucTvSearchFacetOption] {
         withAllItem(categories)
     }
 
-    func countryOptionsWithAll() -> [MotchillSearchFacetOption] {
+    func countryOptionsWithAll() -> [PhucTvSearchFacetOption] {
         withAllItem(countries)
     }
 }
@@ -310,7 +310,7 @@ extension SearchUIState {
         return updated
     }
 
-    func withCategory(_ option: MotchillSearchFacetOption?) -> SearchUIState {
+    func withCategory(_ option: PhucTvSearchFacetOption?) -> SearchUIState {
         var updated = self
         updated.selectedCategoryID = option.flatMap { $0.id > 0 ? $0.id : nil }
         updated.selectedCategoryLabel = option?.id == 0 ? "" : option?.name ?? ""
@@ -318,7 +318,7 @@ extension SearchUIState {
         return updated
     }
 
-    func withCountry(_ option: MotchillSearchFacetOption?) -> SearchUIState {
+    func withCountry(_ option: PhucTvSearchFacetOption?) -> SearchUIState {
         var updated = self
         updated.selectedCountryID = option.flatMap { $0.id > 0 ? $0.id : nil }
         updated.selectedCountryLabel = option?.id == 0 ? "" : option?.name ?? ""
@@ -326,7 +326,7 @@ extension SearchUIState {
         return updated
     }
 
-    func withTypeRaw(_ option: MotchillSearchChoice?) -> SearchUIState {
+    func withTypeRaw(_ option: PhucTvSearchChoice?) -> SearchUIState {
         var updated = self
         updated.selectedTypeRaw = option?.value.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updated.selectedTypeLabel = option?.value.nonEmptyValue == nil ? "" : option?.label ?? ""
@@ -334,7 +334,7 @@ extension SearchUIState {
         return updated
     }
 
-    func withYear(_ option: MotchillSearchChoice?) -> SearchUIState {
+    func withYear(_ option: PhucTvSearchChoice?) -> SearchUIState {
         var updated = self
         updated.selectedYear = option?.value.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         updated.pageNumber = 1
@@ -415,20 +415,20 @@ extension SearchUIState {
         return updated
     }
 
-    func withLoadedFilters(_ filters: MotchillSearchFilterData) -> SearchUIState {
+    func withLoadedFilters(_ filters: PhucTvSearchFilterData) -> SearchUIState {
         var updated = self
         updated.filters = filters
         return updated
     }
 
-    func withLikedMovies(_ movies: [MotchillMovieCard]) -> SearchUIState {
+    func withLikedMovies(_ movies: [PhucTvMovieCard]) -> SearchUIState {
         var updated = self
         updated.likedMovies = movies
         updated.likedMovieIDs = Set(movies.map(\.id))
         return updated
     }
 
-    func withSearchResults(_ results: MotchillSearchResults, pageNumber: Int) -> SearchUIState {
+    func withSearchResults(_ results: PhucTvSearchResults, pageNumber: Int) -> SearchUIState {
         var updated = self
         updated.isLoading = false
         updated.isSearching = false
@@ -469,7 +469,7 @@ extension SearchUIState {
     }
 }
 
-func filterLikedMovies(movies: [MotchillMovieCard], uiState: SearchUIState) -> [MotchillMovieCard] {
+func filterLikedMovies(movies: [PhucTvMovieCard], uiState: SearchUIState) -> [PhucTvMovieCard] {
     let query = uiState.searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     guard !query.isEmpty else { return movies }
 
@@ -487,7 +487,7 @@ func filterLikedMovies(movies: [MotchillMovieCard], uiState: SearchUIState) -> [
 }
 
 func paginateMovies(
-    movies: [MotchillMovieCard],
+    movies: [PhucTvMovieCard],
     pageNumber: Int,
     pageSize: Int = searchPageSize
 ) -> SearchPaginationSlice {
@@ -495,7 +495,7 @@ func paginateMovies(
     guard !movies.isEmpty else {
         return SearchPaginationSlice(
             movies: [],
-            pagination: MotchillSearchPagination(pageIndex: 0, pageSize: safeSize, pageCount: 0, totalRecords: 0)
+            pagination: PhucTvSearchPagination(pageIndex: 0, pageSize: safeSize, pageCount: 0, totalRecords: 0)
         )
     }
 
@@ -505,7 +505,7 @@ func paginateMovies(
     let end = min(start + safeSize, movies.count)
     return SearchPaginationSlice(
         movies: Array(movies[start..<end]),
-        pagination: MotchillSearchPagination(
+        pagination: PhucTvSearchPagination(
             pageIndex: safePage,
             pageSize: safeSize,
             pageCount: pageCount,
@@ -527,8 +527,8 @@ func orderLabel(_ value: String) -> String {
     }
 }
 
-private func withAllItem(_ items: [MotchillSearchFacetOption]) -> [MotchillSearchFacetOption] {
-    let all = MotchillSearchFacetOption(id: 0, name: "Tất cả", slug: "")
+private func withAllItem(_ items: [PhucTvSearchFacetOption]) -> [PhucTvSearchFacetOption] {
+    let all = PhucTvSearchFacetOption(id: 0, name: "Tất cả", slug: "")
     guard let first = items.first else { return [all] }
     if first.id == 0 && first.name.trimmingCharacters(in: .whitespacesAndNewlines).caseInsensitiveCompare("Tất cả") == .orderedSame {
         return items
@@ -555,7 +555,7 @@ private func humanizeSearchSlug(_ value: String) -> String {
         .joined(separator: " ")
 }
 
-private extension MotchillSearchFacetOption {
+private extension PhucTvSearchFacetOption {
     func matchesSlug(_ normalizedSlug: String) -> Bool {
         [
             name,

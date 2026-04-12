@@ -14,9 +14,9 @@ enum PlayerScreenState: Equatable {
 @Observable
 final class PlayerViewModel {
     @ObservationIgnored
-    private let repository: MotchillRepository
+    private let repository: PhucTvRepository
     @ObservationIgnored
-    private let playbackPositionStore: MotchillPlaybackPositionStoring
+    private let playbackPositionStore: PhucTvPlaybackPositionStoring
     @ObservationIgnored
     let player = AVPlayer()
     @ObservationIgnored
@@ -33,10 +33,10 @@ final class PlayerViewModel {
 
     var state: PlayerScreenState = .idle
     var errorMessage: String?
-    var sources: [MotchillPlaySource] = []
+    var sources: [PhucTvPlaySource] = []
     var selectedSourceIndex = 0
-    var selectedAudioTrack: MotchillPlayTrack?
-    var selectedSubtitleTrack: MotchillPlayTrack?
+    var selectedAudioTrack: PhucTvPlayTrack?
+    var selectedSubtitleTrack: PhucTvPlayTrack?
     var currentPositionMillis: Int64 = 0
     var durationMillis: Int64 = 0
     var isPlaying = false
@@ -47,8 +47,8 @@ final class PlayerViewModel {
         episodeID: Int,
         movieTitle: String,
         episodeLabel: String,
-        repository: MotchillRepository,
-        playbackPositionStore: MotchillPlaybackPositionStoring
+        repository: PhucTvRepository,
+        playbackPositionStore: PhucTvPlaybackPositionStoring
     ) {
         self.movieID = movieID
         self.episodeID = episodeID
@@ -59,11 +59,11 @@ final class PlayerViewModel {
         player.automaticallyWaitsToMinimizeStalling = true
     }
 
-    var playableSources: [MotchillPlaySource] {
+    var playableSources: [PhucTvPlaySource] {
         sources.playableDirectStreams
     }
 
-    var selectedSource: MotchillPlaySource? {
+    var selectedSource: PhucTvPlaySource? {
         guard playableSources.indices.contains(selectedSourceIndex) else { return nil }
         return playableSources[selectedSourceIndex]
     }
@@ -72,11 +72,11 @@ final class PlayerViewModel {
         selectedSource?.displayName ?? "No source selected"
     }
 
-    var availableAudioTracks: [MotchillPlayTrack] {
+    var availableAudioTracks: [PhucTvPlayTrack] {
         selectedSource?.audioTracks ?? []
     }
 
-    var availableSubtitleTracks: [MotchillPlayTrack] {
+    var availableSubtitleTracks: [PhucTvPlayTrack] {
         selectedSource?.subtitleTracks ?? []
     }
 
@@ -120,7 +120,7 @@ final class PlayerViewModel {
             await loadPlayerItem(startingAt: resume?.positionMillis ?? 0)
             state = .loaded
         } catch {
-            MotchillLogger.shared.error(
+            PhucTvLogger.shared.error(
                 error,
                 message: "Player load failed",
                 metadata: [
@@ -168,14 +168,14 @@ final class PlayerViewModel {
         cancelOverlayAutoHide()
     }
 
-    func selectAudioTrack(_ track: MotchillPlayTrack?) {
+    func selectAudioTrack(_ track: PhucTvPlayTrack?) {
         if let track, !availableAudioTracks.contains(track) {
             return
         }
         selectedAudioTrack = track
     }
 
-    func selectSubtitleTrack(_ track: MotchillPlayTrack?) {
+    func selectSubtitleTrack(_ track: PhucTvPlayTrack?) {
         if let track, !availableSubtitleTracks.contains(track) {
             return
         }
@@ -231,7 +231,7 @@ final class PlayerViewModel {
                 durationMillis: durationMillis
             )
         } catch {
-            MotchillLogger.shared.error(
+            PhucTvLogger.shared.error(
                 error,
                 message: "Player progress save failed",
                 metadata: [
@@ -332,7 +332,7 @@ final class PlayerViewModel {
             movieTitle: DetailMockData.detail.title,
             episodeLabel: DetailMockData.detail.episodes.first?.label ?? "Episode 1",
             repository: PreviewPlayerRepository(sources: PlayerMockData.sources),
-            playbackPositionStore: PreviewPlayerStore(progress: MotchillPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000))
+            playbackPositionStore: PreviewPlayerStore(progress: PhucTvPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000))
         )
     }
 
@@ -349,8 +349,8 @@ final class PlayerViewModel {
 }
 
 private enum PlayerMockData {
-    static let sources: [MotchillPlaySource] = [
-        MotchillPlaySource(
+    static let sources: [PhucTvPlaySource] = [
+        PhucTvPlaySource(
             sourceId: 1,
             serverName: "Server 1",
             link: "https://example.com/stream-1080.m3u8",
@@ -359,11 +359,11 @@ private enum PlayerMockData {
             isFrame: false,
             quality: "1080p",
             tracks: [
-                MotchillPlayTrack(kind: "audio", file: "https://example.com/audio-en.m3u8", label: "English", isDefault: true),
-                MotchillPlayTrack(kind: "subtitle", file: "https://example.com/sub-en.vtt", label: "English", isDefault: true)
+                PhucTvPlayTrack(kind: "audio", file: "https://example.com/audio-en.m3u8", label: "English", isDefault: true),
+                PhucTvPlayTrack(kind: "subtitle", file: "https://example.com/sub-en.vtt", label: "English", isDefault: true)
             ]
         ),
-        MotchillPlaySource(
+        PhucTvPlaySource(
             sourceId: 2,
             serverName: "Server 2",
             link: "https://example.com/stream-720.m3u8",
@@ -376,11 +376,11 @@ private enum PlayerMockData {
     ]
 }
 
-private struct PreviewPlayerRepository: MotchillRepository {
-    let sources: [MotchillPlaySource]
+private struct PreviewPlayerRepository: PhucTvRepository {
+    let sources: [PhucTvPlaySource]
     let error: Error?
 
-    init(sources: [MotchillPlaySource]) {
+    init(sources: [PhucTvPlaySource]) {
         self.sources = sources
         self.error = nil
     }
@@ -390,11 +390,11 @@ private struct PreviewPlayerRepository: MotchillRepository {
         self.error = error
     }
 
-    func loadHome() async throws -> [MotchillHomeSection] { [] }
-    func loadNavbar() async throws -> [MotchillNavbarItem] { [] }
-    func loadDetail(slug: String) async throws -> MotchillMovieDetail { DetailMockData.detail }
-    func loadPreview(slug: String) async throws -> MotchillMovieDetail { DetailMockData.detail }
-    func loadSearchFilters() async throws -> MotchillSearchFilterData { MotchillSearchFilterData(categories: [], countries: []) }
+    func loadHome() async throws -> [PhucTvHomeSection] { [] }
+    func loadNavbar() async throws -> [PhucTvNavbarItem] { [] }
+    func loadDetail(slug: String) async throws -> PhucTvMovieDetail { DetailMockData.detail }
+    func loadPreview(slug: String) async throws -> PhucTvMovieDetail { DetailMockData.detail }
+    func loadSearchFilters() async throws -> PhucTvSearchFilterData { PhucTvSearchFilterData(categories: [], countries: []) }
     func loadSearchResults(
         categoryId: Int?,
         countryId: Int?,
@@ -405,22 +405,22 @@ private struct PreviewPlayerRepository: MotchillRepository {
         is4k: Bool,
         search: String,
         pageNumber: Int
-    ) async throws -> MotchillSearchResults {
-        MotchillSearchResults(records: [], pagination: MotchillSearchPagination(pageIndex: 1, pageSize: 1, pageCount: 1, totalRecords: 0))
+    ) async throws -> PhucTvSearchResults {
+        PhucTvSearchResults(records: [], pagination: PhucTvSearchPagination(pageIndex: 1, pageSize: 1, pageCount: 1, totalRecords: 0))
     }
     func loadEpisodeSources(
         movieID: Int,
         episodeID: Int,
         server: Int
-    ) async throws -> [MotchillPlaySource] {
+    ) async throws -> [PhucTvPlaySource] {
         if let error { throw error }
         return sources
     }
-    func loadPopupAd() async throws -> MotchillPopupAdConfig? { nil }
+    func loadPopupAd() async throws -> PhucTvPopupAdConfig? { nil }
 }
 
-private struct PreviewPlayerStore: MotchillPlaybackPositionStoring {
-    let progress: MotchillPlaybackProgressSnapshot?
+private struct PreviewPlayerStore: PhucTvPlaybackPositionStoring {
+    let progress: PhucTvPlaybackProgressSnapshot?
 
     func save(
         movieID: Int,
@@ -430,7 +430,7 @@ private struct PreviewPlayerStore: MotchillPlaybackPositionStoring {
     ) async throws {
     }
 
-    func load(movieID: Int, episodeID: Int) async throws -> MotchillPlaybackProgressSnapshot? {
+    func load(movieID: Int, episodeID: Int) async throws -> PhucTvPlaybackProgressSnapshot? {
         progress
     }
 }

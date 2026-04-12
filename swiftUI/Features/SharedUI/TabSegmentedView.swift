@@ -1,9 +1,9 @@
 //
 //  TabSegmentedView.swift
-//  MotchillSwiftUI
+//  PhucTvSwiftUI
 //
 //  Created by Phucnd on 11/4/26.
-//  Copyright © 2026 Motchill. All rights reserved.
+//  Copyright © 2026 PhucTv. All rights reserved.
 //
 
 import SwiftUI

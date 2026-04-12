@@ -6,10 +6,10 @@ struct DetailView: View {
     private let shouldLoadOnAppear: Bool
 
     init(
-        movie: MotchillMovieCard,
-        repository: MotchillRepository,
-        likedMovieStore: MotchillLikedMovieStoring,
-        playbackPositionStore: MotchillPlaybackPositionStoring,
+        movie: PhucTvMovieCard,
+        repository: PhucTvRepository,
+        likedMovieStore: PhucTvLikedMovieStoring,
+        playbackPositionStore: PhucTvPlaybackPositionStoring,
         router: AppRouter
     ) {
         _viewModel = State(

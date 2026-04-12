@@ -8,7 +8,7 @@ enum HomeMockData {
     private static let spiderVersePoster = "https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Spider-Man-_Across_the_Spider-Verse_poster.jpg/250px-Spider-Man-_Across_the_Spider-Verse_poster.jpg"
     private static let topGunPoster = "https://upload.wikimedia.org/wikipedia/en/thumb/1/13/Top_Gun_Maverick_Poster.jpg/250px-Top_Gun_Maverick_Poster.jpg"
 
-    static let loadedSections: [MotchillHomeSection] = [
+    static let loadedSections: [PhucTvHomeSection] = [
         section(
             title: "Slide",
             key: "slide",
@@ -215,10 +215,10 @@ enum HomeMockData {
         )
     ]
 
-    static let emptySections: [MotchillHomeSection] = []
+    static let emptySections: [PhucTvHomeSection] = []
 
-    static func section(title: String, key: String, movies: [MotchillMovieCard]) -> MotchillHomeSection {
-        MotchillHomeSection(
+    static func section(title: String, key: String, movies: [PhucTvMovieCard]) -> PhucTvHomeSection {
+        PhucTvHomeSection(
             title: title,
             key: key,
             products: movies,
@@ -237,8 +237,8 @@ enum HomeMockData {
         year: Int,
         statusTitle: String,
         quality: String
-    ) -> MotchillMovieCard {
-        MotchillMovieCard(
+    ) -> PhucTvMovieCard {
+        PhucTvMovieCard(
             id: id,
             name: name,
             otherName: otherName,
