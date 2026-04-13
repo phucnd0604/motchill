@@ -15,16 +15,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo" translatesAutoresizingMaskIntoConstraints="NO" id="M5f-4E-PRa">
-                                <rect key="frame" x="71.666666666666686" y="301" width="250" height="250"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="250" id="XIZ-4G-APw"/>
-                                    <constraint firstAttribute="width" constant="250" id="gfS-81-9Z9"/>
-                                </constraints>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo" translatesAutoresizingMaskIntoConstraints="NO" id="M5f-4E-PRa">
+                                <rect key="frame" x="-117" y="112.66666666666669" width="627" height="627"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="backgroundColor" red="0.050980392159999999" green="0.058823529409999999" blue="0.090196078430000007" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="M5f-4E-PRa" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="i7V-he-JMP"/>
                             <constraint firstItem="M5f-4E-PRa" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="zrE-bc-3dU"/>
@@ -37,6 +33,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="logo" width="512" height="512"/>
+        <image name="logo" width="627" height="627"/>
     </resources>
 </document>
