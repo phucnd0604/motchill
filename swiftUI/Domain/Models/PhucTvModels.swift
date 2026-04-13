@@ -294,6 +294,15 @@ struct PhucTvPlaySource: Codable, Hashable, Identifiable, Sendable {
         return parts.joined(separator: " • ")
     }
 
+    var actionButtonTitle: String {
+        let trimmedServerName = serverName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedServerName.isEmpty {
+            return trimmedServerName
+        }
+
+        return displayName
+    }
+
     var audioTracks: [PhucTvPlayTrack] {
         tracks.filter { $0.isAudio }
     }

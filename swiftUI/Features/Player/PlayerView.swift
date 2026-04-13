@@ -129,6 +129,8 @@ private struct PlayerScreen: View {
     let viewModel: PlayerViewModel
     let router: AppRouter
 
+    @State private var webDestination: PlayerWebDestination?
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -150,6 +152,11 @@ private struct PlayerScreen: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .fullScreenCover(item: $webDestination) { destination in
+            NavigationStack {
+                PlayerWebViewScreen(destination: destination)
+            }
+        }
     }
 
     @ViewBuilder
@@ -190,21 +197,50 @@ private struct PlayerScreen: View {
                     icon: .playback,
                     secondaryTitle: "Quay lại"
                 ),
+                actionButtons: iframeActionButtons,
                 onRetry: retry,
                 onSecondary: closePlayer
             )
         case .loaded:
             if viewModel.selectedSource == nil {
-                FeatureStateOverlay(
-                    descriptor: .empty(
-                        title: "Chưa có nguồn phát",
-                        message: "Không tìm thấy nguồn phát khả dụng cho tập này. Bạn có thể quay lại hoặc thử tải lại.",
-                        errorCode: "PLAYER_NO_SOURCE",
-                        icon: .playback,
-                        secondaryTitle: "Quay lại"
-                    ),
-                    onRetry: retry,
-                    onSecondary: closePlayer
+                if viewModel.hasIframeOnlySources {
+                    FeatureStateOverlay(
+                        descriptor: .failure(
+                            title: "Không có nguồn phát trực tiếp",
+                            message: "Nguồn này chỉ có iframe. Chọn một nguồn bên dưới để mở trong WebView.",
+                            errorCode: "PLAYER_IFRAME_ONLY",
+                            icon: .playback,
+                            secondaryTitle: "Quay lại"
+                        ),
+                        actionButtons: iframeActionButtons,
+                        onRetry: retry,
+                        onSecondary: closePlayer
+                    )
+                } else {
+                    FeatureStateOverlay(
+                        descriptor: .empty(
+                            title: "Chưa có nguồn phát",
+                            message: "Không tìm thấy nguồn phát khả dụng cho tập này. Bạn có thể quay lại hoặc thử tải lại.",
+                            errorCode: "PLAYER_NO_SOURCE",
+                            icon: .playback,
+                            secondaryTitle: "Quay lại"
+                        ),
+                        onRetry: retry,
+                        onSecondary: closePlayer
+                    )
+                }
+            }
+        }
+    }
+
+    private var iframeActionButtons: [ErrorOverlay.ActionButton] {
+        viewModel.iframeSources.compactMap { source in
+            guard let url = normalizedPlayerURL(from: source.link) else { return nil }
+
+            return ErrorOverlay.ActionButton(title: source.actionButtonTitle) {
+                webDestination = PlayerWebDestination(
+                    title: source.actionButtonTitle,
+                    url: url
                 )
             }
         }
@@ -231,10 +267,64 @@ private struct PlayerScreen: View {
     }
 }
 
+private struct PlayerWebDestination: Identifiable {
+    let id = UUID()
+    let title: String
+    let url: URL
+}
+
+private func normalizedPlayerURL(from rawValue: String) -> URL? {
+    let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return nil }
+
+    if let directURL = URL(string: trimmed), let scheme = directURL.scheme?.lowercased(), scheme == "http" || scheme == "https" {
+        return directURL
+    }
+
+    if trimmed.hasPrefix("//"), let protocolRelativeURL = URL(string: "https:\(trimmed)") {
+        return protocolRelativeURL
+    }
+
+    if let inferredURL = URL(string: "https://\(trimmed)") {
+        return inferredURL
+    }
+
+    return nil
+}
+
+private struct PlayerWebViewScreen: View {
+    let destination: PlayerWebDestination
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        PlayerWebView(url: destination.url)
+            .ignoresSafeArea()
+            .navigationTitle(destination.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Đóng") {
+                        dismiss()
+                    }
+                }
+            }
+    }
+}
+
 #Preview("Player") {
     NavigationStack {
         PlayerView(
             viewModel: PlayerViewModel.previewLoaded(),
+            router: AppRouter()
+        )
+    }
+}
+
+#Preview("Player iframe only") {
+    NavigationStack {
+        PlayerView(
+            viewModel: PlayerViewModel.previewIframeOnlyError(),
             router: AppRouter()
         )
     }

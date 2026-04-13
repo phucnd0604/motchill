@@ -72,6 +72,31 @@ final class PlayerSubtitleSupportTests: XCTestCase {
 
 @MainActor
 final class PlayerViewModelSubtitleTests: XCTestCase {
+    func testLoadRetainsIframeSourcesWhenDirectStreamsAreMissing() async {
+        let iframeSource = makeSource(
+            sourceId: 99,
+            subtitle: "",
+            tracks: [],
+            isFrame: true,
+            link: "https://example.com/embed-99"
+        )
+        let viewModel = makeViewModel(repositorySources: [iframeSource])
+
+        await viewModel.load()
+
+        if case .error = viewModel.state {
+        } else {
+            XCTFail("Expected iframe-only load to produce an error state.")
+        }
+
+        XCTAssertEqual(viewModel.sources.count, 1)
+        XCTAssertEqual(viewModel.iframeSources.count, 1)
+        XCTAssertTrue(viewModel.playableSources.isEmpty)
+        XCTAssertTrue(viewModel.hasIframeOnlySources)
+        XCTAssertEqual(viewModel.sources.first?.link, "https://example.com/embed-99")
+        XCTAssertTrue(viewModel.errorMessage?.contains("iframe") ?? false)
+    }
+
     func testApplyTrackSelectionDefaultsFallsBackToFirstSubtitleTrack() {
         let viewModel = makeViewModel()
         let fallbackTrack = makeTrack(kind: "subtitle", file: "https://example.com/fallback.vtt", label: "Fallback", isDefault: false)
@@ -131,13 +156,39 @@ final class PlayerViewModelSubtitleTests: XCTestCase {
         XCTAssertFalse(viewModel.hasSubtitleTracks)
     }
 
-    private func makeViewModel(loader: PlayerSubtitleLoading = StubSubtitleLoader()) -> PlayerViewModel {
+    func testActionButtonTitleUsesServerNameFallback() {
+        let namedSource = makeSource(
+            sourceId: 1,
+            serverName: "Server A",
+            subtitle: "",
+            tracks: [],
+            isFrame: true,
+            link: "https://example.com/embed-a"
+        )
+        let unnamedSource = makeSource(
+            sourceId: 2,
+            serverName: "   ",
+            subtitle: "",
+            tracks: [],
+            isFrame: true,
+            link: "https://example.com/embed-b",
+            quality: "1080p"
+        )
+
+        XCTAssertEqual(namedSource.actionButtonTitle, "Server A")
+        XCTAssertTrue(unnamedSource.actionButtonTitle.contains("iframe"))
+    }
+
+    private func makeViewModel(
+        loader: PlayerSubtitleLoading = StubSubtitleLoader(),
+        repositorySources: [PhucTvPlaySource] = []
+    ) -> PlayerViewModel {
         PlayerViewModel(
             movieID: 1,
             episodeID: 1,
             movieTitle: "Movie",
             episodeLabel: "Episode 1",
-            repository: StubPlayerRepository(),
+            repository: StubPlayerRepository(sources: repositorySources),
             playbackPositionStore: StubPlaybackStore(),
             subtitleLoader: loader
         )
@@ -145,17 +196,21 @@ final class PlayerViewModelSubtitleTests: XCTestCase {
 
     private func makeSource(
         sourceId: Int,
+        serverName: String = "",
         subtitle: String,
-        tracks: [PhucTvPlayTrack]
+        tracks: [PhucTvPlayTrack],
+        isFrame: Bool = false,
+        link: String = "",
+        quality: String = ""
     ) -> PhucTvPlaySource {
         PhucTvPlaySource(
             sourceId: sourceId,
-            serverName: "Server \(sourceId)",
-            link: "https://example.com/\(sourceId).m3u8",
+            serverName: serverName.isEmpty ? "Server \(sourceId)" : serverName,
+            link: link.isEmpty ? "https://example.com/\(sourceId).m3u8" : link,
             subtitle: subtitle,
             type: 0,
-            isFrame: false,
-            quality: "1080p",
+            isFrame: isFrame,
+            quality: quality.isEmpty ? "1080p" : quality,
             tracks: tracks
         )
     }
@@ -184,6 +239,12 @@ private struct StubSubtitleLoader: PlayerSubtitleLoading {
 }
 
 private struct StubPlayerRepository: PhucTvRepository {
+    let sources: [PhucTvPlaySource]
+
+    init(sources: [PhucTvPlaySource] = []) {
+        self.sources = sources
+    }
+
     func loadHome() async throws -> [PhucTvHomeSection] { [] }
     func loadNavbar() async throws -> [PhucTvNavbarItem] { [] }
     func loadDetail(slug: String) async throws -> PhucTvMovieDetail { DetailMockData.detail }
@@ -206,7 +267,7 @@ private struct StubPlayerRepository: PhucTvRepository {
         movieID: Int,
         episodeID: Int,
         server: Int
-    ) async throws -> [PhucTvPlaySource] { [] }
+    ) async throws -> [PhucTvPlaySource] { sources }
     func loadPopupAd() async throws -> PhucTvPopupAdConfig? { nil }
 }
 

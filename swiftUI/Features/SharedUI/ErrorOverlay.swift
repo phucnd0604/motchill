@@ -9,6 +9,12 @@
 import SwiftUI
 
 struct ErrorOverlay: View {
+    struct ActionButton: Identifiable {
+        let id = UUID()
+        let title: String
+        let action: () -> Void
+    }
+
     enum Icon {
         case generic
         case network
@@ -72,6 +78,7 @@ struct ErrorOverlay: View {
     let errorCode: String?
     let icon: Icon
     let isLoading: Bool
+    let actionButtons: [ActionButton]
     let onRetry: () -> Void
     let onGoHome: (() -> Void)?
 
@@ -85,6 +92,7 @@ struct ErrorOverlay: View {
         errorCode: String? = nil,
         icon: Icon = .network,
         isLoading: Bool = false,
+        actionButtons: [ActionButton] = [],
         onRetry: @escaping () -> Void,
         onGoHome: (() -> Void)? = nil
     ) {
@@ -95,6 +103,7 @@ struct ErrorOverlay: View {
         self.errorCode = errorCode
         self.icon = icon
         self.isLoading = isLoading
+        self.actionButtons = actionButtons
         self.onRetry = onRetry
         self.onGoHome = onGoHome
     }
@@ -197,6 +206,10 @@ struct ErrorOverlay: View {
             }
 
             actionRow
+
+            if !actionButtons.isEmpty {
+                actionButtonsRow
+            }
 
             if let errorCode {
                 metadata(errorCode: errorCode)
@@ -334,6 +347,41 @@ struct ErrorOverlay: View {
         .frame(maxWidth: 300)
     }
 
+    private var actionButtonsRow: some View {
+        VStack(spacing: 12) {
+            ForEach(actionButtons) { button in
+                Button(action: button.action) {
+                    HStack(spacing: 12) {
+                        Text(button.title)
+                            .font(.system(.body, design: .rounded).weight(.semibold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+
+                        Spacer(minLength: 12)
+
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(AppTheme.textMuted)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.white.opacity(0.07))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(Color.white.opacity(0.10), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: 300)
+    }
+
     private func metadata(errorCode: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "info.circle.fill")
@@ -384,5 +432,22 @@ private struct NoiseTexture: View {
         icon: .network,
         isLoading: true,
         onRetry: {}
+    )
+}
+
+#Preview("Iframe Only") {
+    ErrorOverlay(
+        title: "Không có nguồn phát trực tiếp",
+        message: "Nguồn này chỉ có iframe. Chọn một nút bên dưới để mở nội dung trong WebView.",
+        retryTitle: "Tải lại",
+        homeTitle: "Quay lại",
+        errorCode: "PLAYER_IFRAME_ONLY",
+        icon: .playback,
+        actionButtons: [
+            .init(title: "Server 1") {},
+            .init(title: "Server 2") {}
+        ],
+        onRetry: {},
+        onGoHome: {}
     )
 }

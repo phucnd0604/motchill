@@ -76,6 +76,14 @@ final class PlayerViewModel {
         sources.playableDirectStreams
     }
 
+    var iframeSources: [PhucTvPlaySource] {
+        sources.filter(\.isFrame)
+    }
+
+    var hasIframeOnlySources: Bool {
+        playableSources.isEmpty && !iframeSources.isEmpty
+    }
+
     var selectedSource: PhucTvPlaySource? {
         guard playableSources.indices.contains(selectedSourceIndex) else { return nil }
         return playableSources[selectedSourceIndex]
@@ -127,14 +135,21 @@ final class PlayerViewModel {
                 episodeID: episodeID,
                 server: 0
             )
+            sources = fetchedSources
+
             let playable = fetchedSources.playableDirectStreams
             guard !playable.isEmpty else {
-                state = .error(message: "No direct stream source available.")
-                errorMessage = "No direct stream source available."
+                let message: String
+                if fetchedSources.contains(where: { $0.isFrame }) {
+                    message = "Không có nguồn phát trực tiếp. Chọn một iframe bên dưới để mở trong WebView."
+                } else {
+                    message = "No direct stream source available."
+                }
+                state = .error(message: message)
+                errorMessage = message
                 return
             }
 
-            sources = playable
             selectedSourceIndex = 0
             applyTrackSelectionDefaultsForSelectedSource()
 
@@ -448,7 +463,7 @@ final class PlayerViewModel {
     }
 
     static func previewLoaded() -> PlayerViewModel {
-        PlayerViewModel(
+        let viewModel = PlayerViewModel(
             movieID: DetailMockData.detail.id,
             episodeID: DetailMockData.detail.episodes.first?.id ?? 1,
             movieTitle: DetailMockData.detail.title,
@@ -456,10 +471,17 @@ final class PlayerViewModel {
             repository: PreviewPlayerRepository(sources: PlayerMockData.sources),
             playbackPositionStore: PreviewPlayerStore(progress: PhucTvPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000))
         )
+        viewModel.sources = PlayerMockData.sources
+        viewModel.selectedSourceIndex = 0
+        viewModel.applyTrackSelectionDefaultsForSelectedSource()
+        viewModel.state = .loaded
+        viewModel.currentPositionMillis = 120_000
+        viewModel.durationMillis = 600_000
+        return viewModel
     }
 
     static func previewError() -> PlayerViewModel {
-        PlayerViewModel(
+        let viewModel = PlayerViewModel(
             movieID: DetailMockData.detail.id,
             episodeID: DetailMockData.detail.episodes.first?.id ?? 1,
             movieTitle: DetailMockData.detail.title,
@@ -467,6 +489,24 @@ final class PlayerViewModel {
             repository: PreviewPlayerRepository(error: NSError(domain: "PreviewPlayerRepository", code: 1)),
             playbackPositionStore: PreviewPlayerStore(progress: nil)
         )
+        viewModel.state = .error(message: "Không thể nạp nguồn phát trong preview.")
+        viewModel.errorMessage = "Không thể nạp nguồn phát trong preview."
+        return viewModel
+    }
+
+    static func previewIframeOnlyError() -> PlayerViewModel {
+        let viewModel = PlayerViewModel(
+            movieID: DetailMockData.detail.id,
+            episodeID: DetailMockData.detail.episodes.first?.id ?? 1,
+            movieTitle: DetailMockData.detail.title,
+            episodeLabel: DetailMockData.detail.episodes.first?.label ?? "Episode 1",
+            repository: PreviewPlayerRepository(sources: PlayerMockData.iframeSources),
+            playbackPositionStore: PreviewPlayerStore(progress: nil)
+        )
+        viewModel.sources = PlayerMockData.iframeSources
+        viewModel.state = .error(message: "Không có nguồn phát trực tiếp. Chọn một iframe bên dưới để mở trong WebView.")
+        viewModel.errorMessage = "Không có nguồn phát trực tiếp. Chọn một iframe bên dưới để mở trong WebView."
+        return viewModel
     }
 }
 
@@ -493,6 +533,29 @@ private enum PlayerMockData {
             type: 0,
             isFrame: false,
             quality: "720p",
+            tracks: []
+        )
+    ]
+
+    static let iframeSources: [PhucTvPlaySource] = [
+        PhucTvPlaySource(
+            sourceId: 11,
+            serverName: "Iframe 1",
+            link: "https://example.com/embed-1",
+            subtitle: "",
+            type: 0,
+            isFrame: true,
+            quality: "720p",
+            tracks: []
+        ),
+        PhucTvPlaySource(
+            sourceId: 12,
+            serverName: "Iframe 2",
+            link: "https://example.com/embed-2",
+            subtitle: "",
+            type: 0,
+            isFrame: true,
+            quality: "1080p",
             tracks: []
         )
     ]
