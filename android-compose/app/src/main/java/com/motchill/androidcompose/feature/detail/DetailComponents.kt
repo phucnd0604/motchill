@@ -45,8 +45,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.motchill.androidcompose.core.designsystem.MotchillFocusCard
-import com.motchill.androidcompose.core.designsystem.MotchillRemoteImage
+import com.motchill.androidcompose.core.designsystem.PhucTVFocusCard
+import com.motchill.androidcompose.core.designsystem.PhucTVRemoteImage
 import com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot
 import com.motchill.androidcompose.domain.model.MovieCard
 import com.motchill.androidcompose.domain.model.MovieDetail
@@ -175,7 +175,7 @@ private fun DetailHero(
     onOpenTrailer: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxWidth().height(420.dp)) {
-        MotchillRemoteImage(url = detail.displayBackdrop, modifier = Modifier.fillMaxSize())
+        PhucTVRemoteImage(url = detail.displayBackdrop, modifier = Modifier.fillMaxSize())
         Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.15f), Color.Black.copy(alpha = 0.55f), Color(0xFF141414)))))
         Row(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 16.dp, end = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             DetailIconButton(icon = Icons.AutoMirrored.Outlined.ArrowBack, onClick = onBack, label = "Back")
@@ -390,7 +390,7 @@ private fun DetailEpisodeTile(
     val shape = RoundedCornerShape(16.dp)
     val progressFraction = progress?.progressFraction ?: 0f
 
-    MotchillFocusCard(
+    PhucTVFocusCard(
         onClick = onClick,
         borderRadius = shape,
         focusedBorderColor = Color(0xFFE8A7A7),
@@ -454,7 +454,7 @@ private fun formatDuration(positionMs: Long): String {
 
 @Composable
 private fun DetailTabChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    MotchillFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(999.dp), focusedBorderColor = Color(0xFFFFD15C), focusedBackgroundColor = Color(0xFFE50914).copy(alpha = 0.22f), focusScale = 1.02f) {
+    PhucTVFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(999.dp), focusedBorderColor = Color(0xFFFFD15C), focusedBackgroundColor = Color(0xFFE50914).copy(alpha = 0.22f), focusScale = 1.02f) {
         Box(
             modifier = Modifier.background(if (selected) Color(0xFFE50914).copy(alpha = 0.20f) else Color(0xFF191919), RoundedCornerShape(999.dp)).border(1.dp, if (selected) Color(0xFFE50914).copy(alpha = 0.35f) else Color(0xFF2C2C2C), RoundedCornerShape(999.dp)),
         ) {
@@ -484,7 +484,7 @@ private fun DetailSectionCard(modifier: Modifier = Modifier, content: @Composabl
 
 @Composable
 private fun DetailIconButton(icon: ImageVector, onClick: () -> Unit, label: String) {
-    MotchillFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(999.dp), focusedBorderColor = Color(0xFFFFD15C), focusedBackgroundColor = Color.White.copy(alpha = 0.06f), focusScale = 1.02f) {
+    PhucTVFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(999.dp), focusedBorderColor = Color(0xFFFFD15C), focusedBackgroundColor = Color.White.copy(alpha = 0.06f), focusScale = 1.02f) {
         Box(modifier = Modifier.background(Color.Black.copy(alpha = 0.32f), RoundedCornerShape(999.dp)).border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(999.dp))) {
             Icon(imageVector = icon, contentDescription = label, tint = Color.White, modifier = Modifier.padding(10.dp))
         }
@@ -493,7 +493,7 @@ private fun DetailIconButton(icon: ImageVector, onClick: () -> Unit, label: Stri
 
 @Composable
 private fun DetailActionButton(text: String, icon: ImageVector, filled: Boolean, onClick: () -> Unit) {
-    MotchillFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(14.dp), focusedBorderColor = if (filled) Color(0xFFE50914) else Color(0xFFFFD15C), focusScale = 1.02f) {
+    PhucTVFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(14.dp), focusedBorderColor = if (filled) Color(0xFFE50914) else Color(0xFFFFD15C), focusScale = 1.02f) {
         Box(
             modifier = Modifier.background(if (filled) Color(0xFFE50914) else Color(0xFF1A1A1A), RoundedCornerShape(14.dp)).border(1.dp, if (filled) Color(0xFFB9131C) else Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp)),
         ) {
@@ -508,7 +508,7 @@ private fun DetailActionButton(text: String, icon: ImageVector, filled: Boolean,
 
 @Composable
 private fun DetailTextButton(text: String, onClick: () -> Unit) {
-    MotchillFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(999.dp), focusedBorderColor = Color(0xFFFFD15C), focusScale = 1.02f) {
+    PhucTVFocusCard(onClick = onClick, borderRadius = RoundedCornerShape(999.dp), focusedBorderColor = Color(0xFFFFD15C), focusScale = 1.02f) {
         Box(modifier = Modifier.background(Color.White.copy(alpha = 0.04f), RoundedCornerShape(999.dp)).border(1.dp, Color(0xFF2C2C2C), RoundedCornerShape(999.dp))) {
             Text(text = text, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         }
@@ -518,16 +518,16 @@ private fun DetailTextButton(text: String, onClick: () -> Unit) {
 @Composable
 private fun DetailGalleryImage(url: String) {
     Box(modifier = Modifier.height(160.dp).aspectRatio(0.7f).background(Color(0xFF1A1A1A), RoundedCornerShape(16.dp))) {
-        MotchillRemoteImage(url = url, modifier = Modifier.fillMaxSize())
+        PhucTVRemoteImage(url = url, modifier = Modifier.fillMaxSize())
     }
 }
 
 @Composable
 private fun DetailRelatedMovieCard(movie: MovieCard, onClick: (String) -> Unit) {
     Column(modifier = Modifier.width(140.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        MotchillFocusCard(modifier = Modifier.fillMaxWidth().height(245.dp), onClick = { if (movie.link.trim().isNotEmpty()) onClick(movie.link) }, borderRadius = RoundedCornerShape(16.dp), focusedBorderColor = Color(0xFFFFD15C), focusScale = 1.02f) {
+        PhucTVFocusCard(modifier = Modifier.fillMaxWidth().height(245.dp), onClick = { if (movie.link.trim().isNotEmpty()) onClick(movie.link) }, borderRadius = RoundedCornerShape(16.dp), focusedBorderColor = Color(0xFFFFD15C), focusScale = 1.02f) {
             Box(modifier = Modifier.fillMaxSize().background(Color(0xFF1A1A1A), RoundedCornerShape(16.dp))) {
-                MotchillRemoteImage(url = movie.displayPoster, modifier = Modifier.fillMaxSize())
+                PhucTVRemoteImage(url = movie.displayPoster, modifier = Modifier.fillMaxSize())
                 Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.48f), Color.Transparent))))
                 if (movie.rating.isNotBlank()) DetailMetaPill(text = movie.rating)
             }

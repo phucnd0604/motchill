@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.motchill.androidcompose.core.storage.LikedMovieStore
-import com.motchill.androidcompose.data.repository.MotchillRepository
+import com.motchill.androidcompose.data.repository.PhucTVRepository
 import com.motchill.androidcompose.domain.model.SearchChoice
 import com.motchill.androidcompose.domain.model.SearchFacetOption
 import kotlinx.coroutines.async
@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 internal class SearchViewModel(
-    private val repository: MotchillRepository,
+    private val repository: PhucTVRepository,
     private val likedMovieStore: LikedMovieStore,
     private val initialQuery: String,
     private val initialSlug: String,
@@ -202,7 +202,7 @@ internal class SearchViewModel(
 
     companion object {
         fun factory(
-            repository: MotchillRepository,
+            repository: PhucTVRepository,
             likedMovieStore: LikedMovieStore,
             initialQuery: String,
             initialSlug: String,

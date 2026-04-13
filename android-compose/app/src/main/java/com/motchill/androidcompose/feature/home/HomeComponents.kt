@@ -40,8 +40,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.motchill.androidcompose.core.designsystem.MotchillFocusCard
-import com.motchill.androidcompose.core.designsystem.MotchillRemoteImage
+import com.motchill.androidcompose.core.designsystem.PhucTVFocusCard
+import com.motchill.androidcompose.core.designsystem.PhucTVRemoteImage
 import com.motchill.androidcompose.domain.model.HomeSection
 import com.motchill.androidcompose.domain.model.MovieCard
 
@@ -274,7 +274,7 @@ private fun HomeSectionCard(
         modifier = Modifier.width(132.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        MotchillFocusCard(
+        PhucTVFocusCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(226.dp),
@@ -283,7 +283,7 @@ private fun HomeSectionCard(
             focusedBorderColor = if (selected) Color(0xFFE50914) else Color(0xFFFFD15C),
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                MotchillRemoteImage(
+                PhucTVRemoteImage(
                     url = movie.displayPoster,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -363,7 +363,7 @@ private fun HomeSpotlightPanel(
                         shape = RoundedCornerShape(28.dp),
                     ),
             ) {
-                MotchillRemoteImage(
+                PhucTVRemoteImage(
                     url = selectedMovie.displayBanner,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -505,7 +505,7 @@ private fun HomeActionButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    MotchillFocusCard(
+    PhucTVFocusCard(
         modifier = modifier.height(48.dp),
         onClick = onClick,
         borderRadius = RoundedCornerShape(14.dp),
@@ -558,7 +558,7 @@ private fun HomeTextButton(
     text: String,
     onClick: () -> Unit,
 ) {
-    MotchillFocusCard(
+    PhucTVFocusCard(
         onClick = onClick,
         borderRadius = RoundedCornerShape(999.dp),
         focusedBorderColor = Color(0xFFFFD15C),

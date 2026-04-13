@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.motchill.androidcompose.data.repository.MotchillRepository
+import com.motchill.androidcompose.data.repository.PhucTVRepository
 import com.motchill.androidcompose.domain.model.PlayTrack
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class PlayerViewModel(
-    private val repository: MotchillRepository,
+    private val repository: PhucTVRepository,
     private val movieId: Int,
     private val episodeId: Int,
     movieTitle: String,
@@ -157,7 +157,7 @@ class PlayerViewModel(
 
     companion object {
         fun factory(
-            repository: MotchillRepository,
+            repository: PhucTVRepository,
             movieId: Int,
             episodeId: Int,
             movieTitle: String,
@@ -180,6 +180,6 @@ class PlayerViewModel(
             }
         }
 
-        private const val TAG = "Motchill.player"
+        private const val TAG = "PhucTV.player"
     }
 }

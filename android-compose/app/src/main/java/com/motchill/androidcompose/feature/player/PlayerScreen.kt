@@ -83,7 +83,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
-import com.motchill.androidcompose.app.di.MotchillAppContainer
+import com.motchill.androidcompose.app.di.PhucTVAppContainer
 import com.motchill.androidcompose.domain.model.PlaySource
 import com.motchill.androidcompose.domain.model.PlayTrack
 import java.util.Locale
@@ -102,7 +102,7 @@ fun PlayerScreen(
     val viewModel: PlayerViewModel = viewModel(
         factory = remember(movieId, episodeId, movieTitle, episodeLabel) {
             PlayerViewModel.factory(
-                repository = MotchillAppContainer.repository,
+                repository = PhucTVAppContainer.repository,
                 movieId = movieId,
                 episodeId = episodeId,
                 movieTitle = movieTitle,
@@ -119,7 +119,7 @@ fun PlayerScreen(
             context = context,
             movieId = movieId,
             episodeId = episodeId,
-            positionStore = MotchillAppContainer.playbackPositionStore,
+            positionStore = PhucTVAppContainer.playbackPositionStore,
         )
     }
     val runtimeState by engine.state.collectAsStateWithLifecycle()
@@ -662,7 +662,7 @@ private fun PlayerHeader(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = movieTitle.ifBlank { "Motchill" },
+            text = movieTitle.ifBlank { "PhucTV" },
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,

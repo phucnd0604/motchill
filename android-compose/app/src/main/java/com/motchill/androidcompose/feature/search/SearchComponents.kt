@@ -62,8 +62,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.motchill.androidcompose.core.designsystem.MotchillFocusCard
-import com.motchill.androidcompose.core.designsystem.MotchillRemoteImage
+import com.motchill.androidcompose.core.designsystem.PhucTVFocusCard
+import com.motchill.androidcompose.core.designsystem.PhucTVRemoteImage
 import com.motchill.androidcompose.domain.model.MovieCard
 import com.motchill.androidcompose.domain.model.SearchChoice
 import com.motchill.androidcompose.domain.model.SearchFacetOption
@@ -404,7 +404,7 @@ private fun SearchFilterChip(
     onClick: () -> Unit,
     onClear: (() -> Unit)?,
 ) {
-    MotchillFocusCard(
+    PhucTVFocusCard(
         onClick = onClick,
         borderRadius = RoundedCornerShape(999.dp),
         focusedBorderColor = Color(0xFFFFD15C),
@@ -487,7 +487,7 @@ private fun SearchPageButton(
     enabled: Boolean,
     onClick: (() -> Unit)?,
 ) {
-    MotchillFocusCard(
+    PhucTVFocusCard(
         onClick = { onClick?.invoke() },
         enabled = enabled && onClick != null,
         borderRadius = RoundedCornerShape(999.dp),
@@ -524,7 +524,7 @@ private fun SearchMovieCard(
     onClick: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        MotchillFocusCard(
+        PhucTVFocusCard(
             onClick = onClick,
             borderRadius = RoundedCornerShape(18.dp),
             focusedBorderColor = Color(0xFFFFD15C),
@@ -536,7 +536,7 @@ private fun SearchMovieCard(
                 .border(1.dp, Color(0xFF2A2A2A), RoundedCornerShape(18.dp))
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                MotchillRemoteImage(url = movie.displayPoster, modifier = Modifier.fillMaxSize())
+                PhucTVRemoteImage(url = movie.displayPoster, modifier = Modifier.fillMaxSize())
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -749,7 +749,7 @@ private fun SearchPickerRow(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    MotchillFocusCard(
+    PhucTVFocusCard(
         onClick = onClick,
         borderRadius = RoundedCornerShape(16.dp),
         focusedBorderColor = Color(0xFFE8A7A7),
@@ -783,7 +783,7 @@ private fun SearchIconButton(
     selected: Boolean = false,
     compact: Boolean = false,
 ) {
-    MotchillFocusCard(
+    PhucTVFocusCard(
         onClick = onClick,
         borderRadius = RoundedCornerShape(999.dp),
         focusedBorderColor = Color(0xFFFFD15C),

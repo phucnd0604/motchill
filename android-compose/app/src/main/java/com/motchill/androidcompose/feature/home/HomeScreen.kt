@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.motchill.androidcompose.app.di.MotchillAppContainer
+import com.motchill.androidcompose.app.di.PhucTVAppContainer
 
 @Composable
 fun HomeRoute(
@@ -18,7 +18,7 @@ fun HomeRoute(
 ) {
     val homeViewModel: HomeViewModel = viewModel(
         factory = remember {
-            HomeViewModel.factory(MotchillAppContainer.repository)
+            HomeViewModel.factory(PhucTVAppContainer.repository)
         },
     )
     val uiState by homeViewModel.uiState.collectAsState()

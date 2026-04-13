@@ -9,7 +9,7 @@ object ApiConfig {
 
     fun headers(): Map<String, String> {
         return mapOf(
-            "User-Agent" to "Mozilla/5.0 (MotchillAndroidCompose)",
+            "User-Agent" to "Mozilla/5.0 (PhucTVAndroid)",
             "Accept" to "application/json,text/plain,*/*",
         )
     }

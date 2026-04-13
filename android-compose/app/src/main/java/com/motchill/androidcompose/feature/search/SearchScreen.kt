@@ -5,7 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.motchill.androidcompose.app.di.MotchillAppContainer
+import com.motchill.androidcompose.app.di.PhucTVAppContainer
 
 @Composable
 fun SearchRoute(
@@ -19,8 +19,8 @@ fun SearchRoute(
     val searchViewModel: SearchViewModel = viewModel(
         factory = remember(initialQuery, presetSlug, initialLabel, startLikedOnly) {
             SearchViewModel.factory(
-                repository = MotchillAppContainer.repository,
-                likedMovieStore = MotchillAppContainer.likedMovieStore,
+                repository = PhucTVAppContainer.repository,
+                likedMovieStore = PhucTVAppContainer.likedMovieStore,
                 initialQuery = initialQuery,
                 initialSlug = presetSlug,
                 initialLabel = initialLabel,

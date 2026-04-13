@@ -1,6 +1,6 @@
 package com.motchill.androidcompose.feature.home
 
-import com.motchill.androidcompose.data.repository.MotchillRepository
+import com.motchill.androidcompose.data.repository.PhucTVRepository
 import com.motchill.androidcompose.domain.model.HomeSection
 import com.motchill.androidcompose.domain.model.MovieCard
 import com.motchill.androidcompose.domain.model.NavbarItem
@@ -119,7 +119,7 @@ class HomeViewModelTest {
         }
     }
 
-    private class RecordingRepository : MotchillRepository {
+    private class RecordingRepository : PhucTVRepository {
         var homeCalls = 0
         var popupCalls = 0
 

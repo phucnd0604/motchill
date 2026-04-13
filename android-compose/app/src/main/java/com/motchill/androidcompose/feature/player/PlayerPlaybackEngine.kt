@@ -380,6 +380,6 @@ class PlayerPlaybackEngine(
     }
 
     companion object {
-        private const val TAG = "Motchill.player"
+        private const val TAG = "PhucTV.player"
     }
 }

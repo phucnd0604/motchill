@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.motchill.androidcompose.core.storage.LikedMovieStore
 import com.motchill.androidcompose.core.storage.PlaybackPositionStore
-import com.motchill.androidcompose.data.repository.MotchillRepository
+import com.motchill.androidcompose.data.repository.PhucTVRepository
 import com.motchill.androidcompose.domain.model.MovieCard
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class DetailViewModel(
-    private val repository: MotchillRepository,
+    private val repository: PhucTVRepository,
     private val likedMovieStore: LikedMovieStore,
     private val playbackPositionStore: PlaybackPositionStore,
     private val slug: String,
@@ -118,7 +118,7 @@ class DetailViewModel(
 
     companion object {
         fun factory(
-            repository: MotchillRepository,
+            repository: PhucTVRepository,
             likedMovieStore: LikedMovieStore,
             playbackPositionStore: PlaybackPositionStore,
             slug: String,

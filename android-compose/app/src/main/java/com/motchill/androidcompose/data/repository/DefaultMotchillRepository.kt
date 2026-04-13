@@ -1,8 +1,8 @@
 package com.motchill.androidcompose.data.repository
 
 import android.util.Log
-import com.motchill.androidcompose.core.network.MotchillApiClient
-import com.motchill.androidcompose.core.security.MotchillPlayCipher
+import com.motchill.androidcompose.core.network.PhucTVApiClient
+import com.motchill.androidcompose.core.security.PhucTVPlayCipher
 import com.motchill.androidcompose.domain.model.HomeSection
 import com.motchill.androidcompose.domain.model.MovieDetail
 import com.motchill.androidcompose.domain.model.NavbarItem
@@ -11,9 +11,9 @@ import com.motchill.androidcompose.domain.model.PopupAdConfig
 import com.motchill.androidcompose.domain.model.SearchFilterData
 import com.motchill.androidcompose.domain.model.SearchResults
 
-class DefaultMotchillRepository(
-    private val apiClient: MotchillApiClient,
-) : MotchillRepository {
+class DefaultPhucTVRepository(
+    private val apiClient: PhucTVApiClient,
+) : PhucTVRepository {
     override suspend fun loadHome(): List<HomeSection> = apiClient.fetchHomeSections()
 
     override suspend fun loadNavbar(): List<NavbarItem> = apiClient.fetchNavbar()
@@ -73,7 +73,7 @@ class DefaultMotchillRepository(
                 append(payload.take(80))
             },
         )
-        val sources = MotchillPlayCipher.decodeSources(payload)
+        val sources = PhucTVPlayCipher.decodeSources(payload)
         Log.d(
             TAG,
             buildString {
@@ -136,7 +136,7 @@ class DefaultMotchillRepository(
     override suspend fun loadPopupAd(): PopupAdConfig? = apiClient.fetchPopupAd()
 
     companion object {
-        private const val TAG = "Motchill.player"
+        private const val TAG = "PhucTV.player"
     }
 }
 

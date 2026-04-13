@@ -3,7 +3,7 @@ package com.motchill.androidcompose.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.motchill.androidcompose.data.repository.MotchillRepository
+import com.motchill.androidcompose.data.repository.PhucTVRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 internal class HomeViewModel(
-    private val repository: MotchillRepository,
+    private val repository: PhucTVRepository,
     private val remoteConfigLoader: suspend () -> Unit = {
         com.motchill.androidcompose.core.config.RemoteConfigStore.refreshFromRemote()
         Unit
@@ -91,7 +91,7 @@ internal class HomeViewModel(
     }
 
     companion object {
-        fun factory(repository: MotchillRepository): ViewModelProvider.Factory {
+        fun factory(repository: PhucTVRepository): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -10,7 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.motchill.androidcompose.app.di.MotchillAppContainer
+import com.motchill.androidcompose.app.di.PhucTVAppContainer
 
 @Composable
 fun DetailScreen(
@@ -23,9 +23,9 @@ fun DetailScreen(
     val detailViewModel: DetailViewModel = viewModel(
         factory = remember(slug) {
             DetailViewModel.factory(
-                repository = MotchillAppContainer.repository,
-                likedMovieStore = MotchillAppContainer.likedMovieStore,
-                playbackPositionStore = MotchillAppContainer.playbackPositionStore,
+                repository = PhucTVAppContainer.repository,
+                likedMovieStore = PhucTVAppContainer.likedMovieStore,
+                playbackPositionStore = PhucTVAppContainer.playbackPositionStore,
                 slug = slug,
             )
         },
