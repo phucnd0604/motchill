@@ -18,6 +18,97 @@ protocol PhucTvPlaybackPositionStoring: Sendable {
     func load(movieID: Int, episodeID: Int) async throws -> PhucTvPlaybackProgressSnapshot?
 }
 
+struct PhucTvLegacyLocalDataPayload: Sendable {
+    let likedMovies: [PhucTvMovieCard]
+    let playbackPositions: [PhucTvLegacyPlaybackPosition]
+
+    var isEmpty: Bool {
+        likedMovies.isEmpty && playbackPositions.isEmpty
+    }
+}
+
+struct PhucTvLegacyPlaybackPosition: Sendable {
+    let movieID: Int
+    let episodeID: Int
+    let snapshot: PhucTvPlaybackProgressSnapshot
+}
+
+extension UserDefaults {
+    func phucTvLoadLegacyDataPayload() throws -> PhucTvLegacyLocalDataPayload {
+        let likedMovies = try phucTvLoadLegacyLikedMovies()
+        let playbackPositions = try phucTvLoadLegacyPlaybackPositions()
+        return PhucTvLegacyLocalDataPayload(
+            likedMovies: likedMovies,
+            playbackPositions: playbackPositions
+        )
+    }
+
+    func phucTvClearLegacyData() {
+        removeObject(forKey: UserDefaultsPhucTvLikedMovieStore.moviesKey)
+        removeObject(forKey: UserDefaultsPhucTvLikedMovieStore.movieIDsKey)
+
+        for key in dictionaryRepresentation().keys where key.hasPrefix(UserDefaultsPhucTvPlaybackPositionStore.keyPrefix) {
+            removeObject(forKey: key)
+        }
+    }
+
+    private func phucTvLoadLegacyLikedMovies() throws -> [PhucTvMovieCard] {
+        let encodedMovies = array(forKey: UserDefaultsPhucTvLikedMovieStore.moviesKey) as? [Data] ?? []
+        if !encodedMovies.isEmpty {
+            return try encodedMovies.map { try JSONDecoder().decode(PhucTvMovieCard.self, from: $0) }
+        }
+
+        let ids = array(forKey: UserDefaultsPhucTvLikedMovieStore.movieIDsKey) as? [Int] ?? []
+        return ids.map { movieID in
+            PhucTvMovieCard(
+                id: movieID,
+                name: "Movie \(movieID)",
+                otherName: "",
+                avatar: "",
+                bannerThumb: "",
+                avatarThumb: "",
+                description: "",
+                banner: "",
+                imageIcon: "",
+                link: "",
+                quantity: "",
+                rating: "",
+                year: 0,
+                statusTitle: "",
+                statusRaw: "",
+                statusText: "",
+                director: "",
+                time: "",
+                trailer: "",
+                showTimes: "",
+                moreInfo: "",
+                castString: "",
+                episodesTotal: 0,
+                viewNumber: 0,
+                ratePoint: 0,
+                photoUrls: [],
+                previewPhotoUrls: []
+            )
+        }
+    }
+
+    private func phucTvLoadLegacyPlaybackPositions() throws -> [PhucTvLegacyPlaybackPosition] {
+        dictionaryRepresentation()
+            .compactMap { key, value in
+                guard key.hasPrefix(UserDefaultsPhucTvPlaybackPositionStore.keyPrefix) else {
+                    return nil
+                }
+                guard
+                    let data = value as? Data,
+                    let record = UserDefaultsPhucTvPlaybackPositionStore.record(from: key, data: data)
+                else {
+                    return nil
+                }
+                return record
+            }
+    }
+}
+
 actor UserDefaultsPhucTvLikedMovieStore: PhucTvLikedMovieStoring {
     private let defaults: UserDefaults
 
@@ -90,8 +181,8 @@ actor UserDefaultsPhucTvLikedMovieStore: PhucTvLikedMovieStoring {
         defaults.set(movies.map(\.id), forKey: Self.movieIDsKey)
     }
 
-    private static let moviesKey = "liked_movies"
-    private static let movieIDsKey = "liked_movie_ids"
+    static let moviesKey = "liked_movies"
+    static let movieIDsKey = "liked_movie_ids"
 }
 
 actor UserDefaultsPhucTvPlaybackPositionStore: PhucTvPlaybackPositionStoring {
@@ -122,7 +213,29 @@ actor UserDefaultsPhucTvPlaybackPositionStore: PhucTvPlaybackPositionStoring {
         return try JSONDecoder().decode(PhucTvPlaybackProgressSnapshot.self, from: data)
     }
 
-    private static func key(movieID: Int, episodeID: Int) -> String {
-        "playback_position:\(movieID):\(episodeID)"
+    static let keyPrefix = "playback_position:"
+
+    static func key(movieID: Int, episodeID: Int) -> String {
+        "\(keyPrefix)\(movieID):\(episodeID)"
+    }
+
+    static func record(from key: String, data: Data) -> PhucTvLegacyPlaybackPosition? {
+        let prefix = keyPrefix
+        guard key.hasPrefix(prefix) else { return nil }
+        let raw = key.dropFirst(prefix.count)
+        let components = raw.split(separator: ":", omittingEmptySubsequences: false)
+        guard components.count == 2,
+              let movieID = Int(components[0]),
+              let episodeID = Int(components[1]) else {
+            return nil
+        }
+        guard let snapshot = try? JSONDecoder().decode(PhucTvPlaybackProgressSnapshot.self, from: data) else {
+            return nil
+        }
+        return PhucTvLegacyPlaybackPosition(
+            movieID: movieID,
+            episodeID: episodeID,
+            snapshot: snapshot
+        )
     }
 }

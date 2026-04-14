@@ -8,6 +8,7 @@ protocol ScreenIdleManaging: Sendable {
 
 struct AppDependencies: Sendable {
     let repository: PhucTvRepository
+    let authManager: PhucTvSupabaseAuthManager
     let likedMovieStore: PhucTvLikedMovieStoring
     let playbackPositionStore: PhucTvPlaybackPositionStoring
     let configuration: AppConfiguration
@@ -16,6 +17,7 @@ struct AppDependencies: Sendable {
     @MainActor
     init(container: AppContainer) {
         repository = container.repository
+        authManager = container.authManager
         likedMovieStore = container.likedMovieStore
         playbackPositionStore = container.playbackPositionStore
         configuration = container.configuration
@@ -24,12 +26,14 @@ struct AppDependencies: Sendable {
 
     init(
         repository: PhucTvRepository,
+        authManager: PhucTvSupabaseAuthManager,
         likedMovieStore: PhucTvLikedMovieStoring,
         playbackPositionStore: PhucTvPlaybackPositionStoring,
         configuration: AppConfiguration,
         screenIdleManager: ScreenIdleManaging
     ) {
         self.repository = repository
+        self.authManager = authManager
         self.likedMovieStore = likedMovieStore
         self.playbackPositionStore = playbackPositionStore
         self.configuration = configuration
@@ -38,6 +42,7 @@ struct AppDependencies: Sendable {
 
     static let preview = AppDependencies(
         repository: PreviewRepository(),
+        authManager: PhucTvSupabaseAuthManager(client: nil),
         likedMovieStore: PreviewLikedMovieStore(),
         playbackPositionStore: PreviewPlaybackPositionStore(),
         configuration: AppConfiguration(),

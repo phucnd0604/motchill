@@ -15,6 +15,7 @@
 		6AC200000000000000000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6AC200000000000000000021 /* Assets.xcassets */; };
 		A0A0A0A0A0A0A0A0A0A0A0A0 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = C0C0C0C0C0C0C0C0C0C0C0C0 /* Alamofire */; };
 		BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 33C6D38FEB06E2F321451C7A /* Kingfisher */; };
+		E1E1E1E1E1E1E1E1E1E1E1E1 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F1F1F1F1F1F1F1F1F1F1F1F1 /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 				BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */,
 				68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */,
 				5E312E562F8BDC5D00C90FED /* SwiftSubtitles in Frameworks */,
+				E1E1E1E1E1E1E1E1E1E1E1E1 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,6 +142,7 @@
 				68A94BEE2F889C5600C59159 /* SwiftyBeaver */,
 				5EB4882E2F8A8A88007251E8 /* Flow */,
 				5E312E552F8BDC5D00C90FED /* SwiftSubtitles */,
+				F1F1F1F1F1F1F1F1F1F1F1F1 /* Supabase */,
 			);
 			productName = PhucTvSwiftUI;
 			productReference = C6D71A602C00353F1003A1BD /* PhucTV.app */;
@@ -200,6 +203,7 @@
 				68A94BED2F889C5600C59159 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
 				5EB4882D2F8A8A88007251E8 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 				5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */,
+				D1D1D1D1D1D1D1D1D1D1D1D1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			productRefGroup = 24B62C632F1E5C474C2029A7 /* Products */;
 			projectDirPath = "";
@@ -264,6 +268,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = PhucTvSwiftUI.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development: phucci nguyen (VZPB3RQXJ2)";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -272,6 +277,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PhucTvSwiftUI-Info.plist";
+				INFOPLIST_KEY_SUPABASE_PUBLISHABLE_KEY = sb_publishable_t2AXYSGSGMgRkwNVuff32g_hK_iXfw0;
+				INFOPLIST_KEY_SUPABASE_URL = "https://frizgxdwkifvxvbvpcxj.supabase.co";
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -353,6 +360,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = PhucTvSwiftUI.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development: phucci nguyen (VZPB3RQXJ2)";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -360,6 +368,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PhucTvSwiftUI-Info.plist";
+				INFOPLIST_KEY_SUPABASE_PUBLISHABLE_KEY = sb_publishable_t2AXYSGSGMgRkwNVuff32g_hK_iXfw0;
+				INFOPLIST_KEY_SUPABASE_URL = "https://frizgxdwkifvxvbvpcxj.supabase.co";
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -569,6 +579,14 @@
 				minimumVersion = 5.10.0;
 			};
 		};
+		D1D1D1D1D1D1D1D1D1D1D1D1 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.39.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -596,6 +614,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B0B0B0B0B0B0B0B0B0B0B0B0 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		F1F1F1F1F1F1F1F1F1F1F1F1 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D1D1D1D1D1D1D1D1D1D1D1D1 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

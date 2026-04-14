@@ -6,8 +6,11 @@ struct PhucTvSwiftUIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppShellView()
+            AppShellView(dependencies: dependencies)
                 .environment(\.appDependencies, dependencies)
+                .onOpenURL { url in
+                    dependencies.authManager.handle(url)
+                }
         }
     }
 }
