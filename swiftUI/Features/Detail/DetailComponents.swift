@@ -547,7 +547,7 @@ struct DetailEpisodeRow: View {
                     Text(movie.displayTitle)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
-                        .lineLimit(1)
+                        .lineLimit(2)
 
                     FlowWrapLayout(items: rowPills) { text in
                         FeatureMetaPill(text: text)
@@ -556,7 +556,7 @@ struct DetailEpisodeRow: View {
                     Text(continueWatchingText)
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundStyle(AppTheme.textSecondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
 
                     Text("Tap để xem ngay")
                         .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -569,11 +569,13 @@ struct DetailEpisodeRow: View {
 
                 RemoteImageView(
                     url: detailEpisodePosterURL(from: detailEpisodeArtwork(for: movie)),
-                    cornerRadius: 18
+                    cornerRadius: 18,
+                    width: 100,
+                    height: 100
                 )
                 .overlay {
                     Image(systemName: "play.circle.fill")
-                        .font(.system(size: 56, weight: .semibold))
+                        .font(.system(size: 40, weight: .bold))
                         .foregroundStyle(.red)
                         .shadow(color: Color.black.opacity(0.36), radius: 8, x: 0, y: 4)
                 }

@@ -4,6 +4,8 @@ import Kingfisher
 struct RemoteImageView: View {
     let url: URL?
     var cornerRadius: CGFloat = 24
+    var width: CGFloat? = nil
+    var height: CGFloat? = nil
 
     var body: some View {
         KFImage(url)
@@ -15,6 +17,7 @@ struct RemoteImageView: View {
             }
             .resizable()
             .scaledToFill()
+            .frame(width: width, height: height)
             .clipped()
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }

@@ -1,2 +1,5 @@
 .codex/
-swiftUI/PhucTvSwiftUI.xcodeproj/project.xcworkspace/xcuserdata/inyourdream..xcuserdatad/UserInterfaceState.xcuserstate
+.DS_Store
+**/.DS_Store
+**/*.xcuserstate
+**/xcuserdata/
