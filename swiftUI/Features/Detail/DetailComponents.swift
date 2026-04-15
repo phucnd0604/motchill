@@ -591,9 +591,9 @@ struct DetailEpisodeRow: View {
                     height: 100
                 )
                 .overlay {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 40, weight: .bold))
-                        .foregroundStyle(.red)
+                    Image("Pause")
+                        .resizable()
+                        .scaledToFit()
                         .shadow(color: Color.black.opacity(0.36), radius: 8, x: 0, y: 4)
                 }
             }
