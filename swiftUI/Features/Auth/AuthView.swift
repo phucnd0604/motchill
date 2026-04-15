@@ -41,14 +41,15 @@ struct AuthView: View {
         .onChange(of: authManager.isAuthenticated) { _, isAuth in
             if isAuth { dismiss() }
         }
-        .task(id: step) {
-            // Start 60s cooldown the moment OTP step is entered.
-            guard case .otpEntry = step else { return }
-            resendCooldown = 60
-            while resendCooldown > 0 {
+        .task(id: resendCooldown) {
+            // Restartable countdown; capture initial value to avoid immediate cancel on state changes
+            let start = resendCooldown
+            guard start > 0 else { return }
+            var remaining = start
+            while remaining > 0 && !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
-                guard case .otpEntry = step else { return }
-                resendCooldown -= 1
+                remaining -= 1
+                resendCooldown = remaining
             }
         }
     }
@@ -242,12 +243,9 @@ struct AuthView: View {
                     .font(.system(.title3, design: .monospaced).weight(.semibold))
                     .tracking(8)
                     .onChange(of: otpCode) { _, newValue in
-                        // Allow digits only, max 6 chars
+                        // Allow digits only, no hard limit
                         let filtered = newValue.filter(\.isNumber)
-                        let trimmed = String(filtered.prefix(6))
-                        if trimmed != newValue { otpCode = trimmed }
-                        // Auto-submit on 6 digits
-                        if trimmed.count == 6 { Task { await verifyOTP() } }
+                        if filtered != newValue { otpCode = filtered }
                     }
             }
             .padding(.horizontal, 14)
@@ -259,10 +257,10 @@ struct AuthView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .stroke(
-                        otpCode.count == 6
-                            ? Color(red: 0.3, green: 0.9, blue: 0.55).opacity(0.7)
-                            : Color.white.opacity(0.12),
-                        lineWidth: otpCode.count == 6 ? 1.5 : 1
+                        otpCode.count > 6
+                        ? Color(red: 0.3, green: 0.9, blue: 0.55).opacity(0.7)
+                        : Color.white.opacity(0.12),
+                        lineWidth: otpCode.count > 6 ? 1.5 : 1
                     )
             )
         }
@@ -365,7 +363,7 @@ struct AuthView: View {
     }
 
     private var canSubmitOTP: Bool {
-        otpCode.count == 6
+        otpCode.count > 6
     }
 
     // MARK: - Actions
@@ -379,6 +377,7 @@ struct AuthView: View {
         do {
             let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
             try await authManager.sendOTP(email: trimmed)
+            resendCooldown = 60
             withAnimation { step = .otpEntry(email: trimmed) }
         } catch {
             feedbackMessage = FeedbackMessage(text: error.localizedDescription, isError: true)
