@@ -275,7 +275,7 @@ struct PhucTvPlaySource: Codable, Hashable, Identifiable, Sendable {
     let quality: String
     let tracks: [PhucTvPlayTrack]
 
-    var id: Int { sourceId }
+    var id: String { link }
 
     var displayName: String {
         var parts: [String] = []

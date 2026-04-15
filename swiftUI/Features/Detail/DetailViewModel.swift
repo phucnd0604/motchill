@@ -80,17 +80,10 @@ final class DetailViewModel {
         return detail?.defaultTab ?? .synopsis
     }
 
-    func load(episodeProgressOnly: Bool = false) async {
+    func load() async {
         state = .loading
 
         do {
-            if episodeProgressOnly {
-                guard let detail else {
-                    return
-                }
-                self.episodeProgressById = await loadEpisodeProgress(for: detail)
-                return
-            }
             let slug = movie.link.isEmpty ? String(movie.id) : movie.link
             let detail = try await repository.loadDetail(slug: slug)
             self.detail = detail
