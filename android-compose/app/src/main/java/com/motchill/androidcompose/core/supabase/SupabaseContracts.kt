@@ -5,14 +5,6 @@ import com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot
 import com.motchill.androidcompose.domain.model.MovieCard
 import kotlinx.coroutines.flow.StateFlow
 
-data class SupabaseConfig(
-    val baseUrl: String,
-    val anonKey: String,
-) {
-    val isConfigured: Boolean
-        get() = baseUrl.isNotBlank() && anonKey.isNotBlank()
-}
-
 data class UserSummary(
     val id: String,
     val email: String?,

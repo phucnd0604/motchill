@@ -1,5 +1,6 @@
 package com.motchill.androidcompose.core.supabase
 
+import com.motchill.androidcompose.core.supabase.models.LikedMovieRow
 import com.motchill.androidcompose.domain.model.MovieCard
 
 class SupabaseLikedMovieStore(

@@ -2,6 +2,7 @@ package com.motchill.androidcompose.core.supabase
 
 import com.motchill.androidcompose.core.storage.LocalPlaybackPosition
 import com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot
+import com.motchill.androidcompose.core.supabase.models.PlaybackPositionRow
 
 class SupabasePlaybackPositionStore(
     private val client: SupabaseRestClient,

@@ -32,7 +32,7 @@ class SupabaseAuthManagerTest {
         val client = RecordingNetworkClient()
         val manager = SupabaseAuthManager(
             sessionStore = sessionStore,
-            client = client,
+            networkClient = client,
         )
 
         runBlocking(Dispatchers.Main) {
@@ -49,6 +49,9 @@ class SupabaseAuthManagerTest {
     }
 
     private class RecordingNetworkClient : SupabaseNetworkClient {
+        override val supabaseClient: io.github.jan.supabase.SupabaseClient = io.github.jan.supabase.createSupabaseClient("https://dummy.com", "dummy") {
+            install(io.github.jan.supabase.auth.Auth)
+        }
         var sendOtpThreadName: String = ""
 
         override suspend fun sendOtp(email: String) {

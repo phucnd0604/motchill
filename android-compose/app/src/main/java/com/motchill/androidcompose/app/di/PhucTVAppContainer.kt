@@ -30,29 +30,33 @@ object PhucTVAppContainer {
 
     val supabaseConfig: SupabaseConfig by lazy {
         SupabaseConfig(
-            baseUrl = BuildConfig.SUPABASE_URL,
-            anonKey = BuildConfig.SUPABASE_ANON_KEY,
+            url = BuildConfig.SUPABASE_URL,
+            publishableKey = BuildConfig.SUPABASE_ANON_KEY,
         )
     }
 
-    val supabaseClient: SupabaseRestClient by lazy {
-        SupabaseRestClient(supabaseConfig)
+    val supabaseClient: io.github.jan.supabase.SupabaseClient by lazy {
+        com.motchill.androidcompose.core.supabase.createSupabaseClient(supabaseConfig)
+    }
+
+    val supabaseRestClient: SupabaseRestClient by lazy {
+        SupabaseRestClient(supabaseClient)
     }
 
     val authManager: SupabaseAuthManager by lazy {
         checkInitialized()
         SupabaseAuthManager(
             sessionStore = SupabaseSessionStore(appContext),
-            client = supabaseClient,
+            networkClient = supabaseRestClient,
         )
     }
 
     val remoteLikedMovieStore: SupabaseLikedMovieStore by lazy {
-        SupabaseLikedMovieStore(supabaseClient, authManager)
+        SupabaseLikedMovieStore(supabaseRestClient, authManager)
     }
 
     val remotePlaybackPositionStore: SupabasePlaybackPositionStore by lazy {
-        SupabasePlaybackPositionStore(supabaseClient, authManager)
+        SupabasePlaybackPositionStore(supabaseRestClient, authManager)
     }
 
     val repository: PhucTVRepository by lazy {

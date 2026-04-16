@@ -1,4 +1,5 @@
 package com.motchill.androidcompose.core.supabase
+import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserSession
@@ -16,9 +17,10 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 class SupabaseAuthManager(
+    private val networkClient: SupabaseNetworkClient,
     private val sessionStore: SupabaseSessionRepository,
-    private val client: SupabaseNetworkClient,
 ) : AuthSessionProvider {
+    private val client: SupabaseClient get() = networkClient.supabaseClient
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val _state = MutableStateFlow<AuthState>(AuthState.Loading)
     private var syncCoordinator: SyncCoordinator? = null
@@ -37,10 +39,10 @@ class SupabaseAuthManager(
                         refreshToken = savedSession.refreshToken,
                         expiresIn = 3600.seconds.inWholeSeconds,
                         tokenType = savedSession.tokenType,
-                        user = null, // Will be fetched by SDK
+                        user = null, 
                         expiresAt = Instant.fromEpochSeconds(savedSession.expiresAtEpochSeconds),
                     )
-                    client.supabaseClient.auth.importSession(userSession)
+                    client.auth.importSession(userSession)
                     _state.value = AuthState.SignedIn(savedSession.user)
                 } catch (e: Exception) {
                     _state.value = AuthState.SignedOut
@@ -55,7 +57,7 @@ class SupabaseAuthManager(
 
     @OptIn(ExperimentalTime::class)
     private suspend fun observeSessionStatus() {
-        client.supabaseClient.auth.sessionStatus.collectLatest { status ->
+        client.auth.sessionStatus.collectLatest { status ->
             when (status) {
                 is SessionStatus.Authenticated -> {
                     val session = status.session
@@ -85,7 +87,7 @@ class SupabaseAuthManager(
                     emitSignedOut()
                 }
                 else -> {
-                    // Other states
+                    // Other states: LoadingFromStorage, NetworkError, etc.
                 }
             }
         }
@@ -97,28 +99,32 @@ class SupabaseAuthManager(
 
     suspend fun sendOTP(email: String) {
         withContext(Dispatchers.IO) {
-            client.sendOtp(email.trim())
+            networkClient.sendOtp(email)
         }
     }
 
     suspend fun verifyOTP(email: String, token: String) {
         withContext(Dispatchers.IO) {
-            client.verifyOtp(email.trim(), token.trim())
+            networkClient.verifyOtp(email, token)
         }
-        // No need to manually persist or emit, observeSessionStatus will handle it
     }
 
     suspend fun signOut() {
         withContext(Dispatchers.IO) {
-            client.supabaseClient.auth.signOut()
+            client.auth.signOut()
         }
     }
 
     suspend fun refreshSession() {
         withContext(Dispatchers.IO) {
             try {
-                if (client.supabaseClient.auth.currentSessionOrNull() != null) {
-                    client.supabaseClient.auth.refreshCurrentSession()
+                val session = client.auth.currentSessionOrNull()
+                if (session?.user != null) {
+                    client.auth.refreshCurrentSession()
+                    _state.value = AuthState.SignedIn(session.user!!.toUserSummary())
+                    syncCoordinator?.runMigrationIfNeeded()
+                } else {
+                    _state.value = AuthState.SignedOut
                 }
             } catch (e: Exception) {
                 // Ignore
@@ -133,13 +139,13 @@ class SupabaseAuthManager(
         get() = currentUser?.id
 
     override val accessToken: String?
-        get() = client.supabaseClient.auth.currentSessionOrNull()?.accessToken
+        get() = client.auth.currentSessionOrNull()?.accessToken
 
     override val currentUser: UserSummary?
         get() = when (val s = _state.value) {
             is AuthState.SignedIn -> s.user
             else -> {
-                client.supabaseClient.auth.currentUserOrNull()?.let {
+                client.auth.currentUserOrNull()?.let {
                     UserSummary(it.id, it.email)
                 }
             }
@@ -151,5 +157,9 @@ class SupabaseAuthManager(
 
     private fun emitSignedOut() {
         _state.value = AuthState.SignedOut
+    }
+
+    private fun io.github.jan.supabase.auth.user.UserInfo.toUserSummary(): UserSummary {
+        return UserSummary(id = this.id, email = this.email)
     }
 }

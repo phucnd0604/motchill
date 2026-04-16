@@ -1,6 +1,8 @@
 package com.motchill.androidcompose.core.supabase
 
 import com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot
+import com.motchill.androidcompose.core.supabase.models.LikedMovieRow
+import com.motchill.androidcompose.core.supabase.models.PlaybackPositionRow
 import com.motchill.androidcompose.domain.model.MovieCard
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.OtpType
@@ -15,19 +17,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-class SupabaseRestClient(private val config: SupabaseConfig) : SupabaseNetworkClient {
-    val client: SupabaseClient = createSupabaseClient(
-        supabaseUrl = config.baseUrl,
-        supabaseKey = config.anonKey,
-    ) {
-        install(io.github.jan.supabase.auth.Auth)
-        install(io.github.jan.supabase.postgrest.Postgrest)
-    }
-
+class SupabaseRestClient(
     override val supabaseClient: SupabaseClient
-        get() = client
+) : SupabaseNetworkClient {
+    private val client: SupabaseClient get() = supabaseClient
 
-    fun isConfigured(): Boolean = config.isConfigured
+    fun isConfigured(): Boolean = true // Now managed via DI
 
     override suspend fun sendOtp(email: String) {
         client.auth.signInWith(OTP) {
