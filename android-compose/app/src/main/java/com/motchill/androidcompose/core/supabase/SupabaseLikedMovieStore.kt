@@ -8,20 +8,17 @@ class SupabaseLikedMovieStore(
 ) : LikedMovieRemoteStore {
     override suspend fun loadMovies(): List<MovieCard> {
         val user = authSessionProvider.userId ?: return emptyList()
-        val accessToken = authSessionProvider.accessToken ?: return emptyList()
-        return client.loadLikedMovies(user, accessToken)
+        return client.loadLikedMovies(user)
     }
 
     override suspend fun toggleMovie(movie: MovieCard): List<MovieCard> {
         val user = authSessionProvider.userId ?: return emptyList()
-        val accessToken = authSessionProvider.accessToken ?: return emptyList()
-        return client.toggleLikedMovie(user, accessToken, movie)
+        return client.toggleLikedMovie(user, movie)
     }
 
     override suspend fun importLegacyMovies(movies: List<MovieCard>) {
         if (movies.isEmpty()) return
         val user = authSessionProvider.userId ?: return
-        val accessToken = authSessionProvider.accessToken ?: return
-        client.upsertLikedMovies(user, accessToken, movies)
+        client.upsertLikedMovies(user, movies)
     }
 }

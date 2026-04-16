@@ -65,6 +65,7 @@ interface SyncCoordinator {
 }
 
 interface SupabaseNetworkClient {
+    val supabaseClient: io.github.jan.supabase.SupabaseClient
     suspend fun sendOtp(email: String)
     suspend fun verifyOtp(email: String, token: String): SupabaseSession
     suspend fun fetchCurrentUser(accessToken: String): UserSummary?

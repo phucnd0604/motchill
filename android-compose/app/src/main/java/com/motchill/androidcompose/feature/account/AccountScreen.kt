@@ -32,12 +32,6 @@ fun AccountScreen(
     val viewModel: AccountViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.authState) {
-        if (uiState.authState is com.motchill.androidcompose.core.supabase.AuthState.SignedOut) {
-            onOpenAuth()
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()

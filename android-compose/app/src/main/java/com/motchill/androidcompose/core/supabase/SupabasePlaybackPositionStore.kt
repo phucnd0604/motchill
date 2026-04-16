@@ -9,8 +9,7 @@ class SupabasePlaybackPositionStore(
 ) : PlaybackPositionRemoteStore {
     override suspend fun load(movieId: Int, episodeId: Int): PlaybackProgressSnapshot? {
         val user = authSessionProvider.userId ?: return null
-        val accessToken = authSessionProvider.accessToken ?: return null
-        return client.loadPlaybackPosition(user, accessToken, movieId, episodeId)
+        return client.loadPlaybackPosition(user, movieId, episodeId)
     }
 
     override suspend fun save(
@@ -20,13 +19,10 @@ class SupabasePlaybackPositionStore(
         durationMillis: Long,
     ) {
         val user = authSessionProvider.userId ?: return
-        val accessToken = authSessionProvider.accessToken ?: return
         val local = PlaybackProgressSnapshot(positionMillis = positionMillis, durationMillis = durationMillis)
-        val remote = client.loadPlaybackPosition(user, accessToken, movieId, episodeId)
+        val remote = client.loadPlaybackPosition(user, movieId, episodeId)
         if (!shouldWriteRemote(local, remote)) return
         client.upsertPlaybackPosition(
-            userId = user,
-            accessToken = accessToken,
             row = PlaybackPositionRow(
                 userId = user,
                 movieId = movieId,
@@ -40,10 +36,7 @@ class SupabasePlaybackPositionStore(
     override suspend fun importLegacyPositions(positions: List<LocalPlaybackPosition>) {
         if (positions.isEmpty()) return
         val user = authSessionProvider.userId ?: return
-        val accessToken = authSessionProvider.accessToken ?: return
         client.upsertPlaybackPositions(
-            userId = user,
-            accessToken = accessToken,
             rows = positions.map {
                 PlaybackPositionRow(
                     userId = user,

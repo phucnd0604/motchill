@@ -36,23 +36,19 @@ class PlaybackPositionStore(
     }
 
     override suspend fun load(movieId: Int, episodeId: Int): PlaybackProgressSnapshot? = withContext(Dispatchers.IO) {
+        val localSnapshot = loadLocal(movieId, episodeId)
+        
         if (authSessionProvider?.isAuthenticated == true && remoteStore != null) {
-            remoteStore?.let { runCatching { it.load(movieId, episodeId) } }?.getOrNull()?.let { remoteSnapshot ->
-                if (remoteSnapshot != null) {
+            val remoteSnapshot = runCatching { remoteStore.load(movieId, episodeId) }.getOrNull()
+            if (remoteSnapshot != null) {
+                // Trả về kết quả tiến xa nhất giữa Local và Remote
+                if (localSnapshot == null || remoteSnapshot.positionMillis >= localSnapshot.positionMillis) {
                     return@withContext remoteSnapshot
                 }
             }
         }
 
-        val positionValue = prefs.getLong(PlaybackPositionKeys.key(movieId, episodeId), Long.MIN_VALUE)
-        if (positionValue == Long.MIN_VALUE || positionValue < 0) return@withContext null
-
-        val durationValue = prefs.getLong(PlaybackDurationKeys.key(movieId, episodeId), Long.MIN_VALUE)
-        val durationMillis = if (durationValue == Long.MIN_VALUE || durationValue < 0) 0L else durationValue
-        PlaybackProgressSnapshot(
-            positionMillis = positionValue,
-            durationMillis = durationMillis,
-        )
+        return@withContext localSnapshot
     }
 
     override suspend fun loadAllPending(): List<LocalPlaybackPosition> = withContext(Dispatchers.IO) {

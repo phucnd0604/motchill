@@ -1,26 +1,94 @@
 package com.motchill.androidcompose.core.supabase
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 
 class SupabaseAuthManager(
     private val sessionStore: SupabaseSessionRepository,
     private val client: SupabaseNetworkClient,
 ) : AuthSessionProvider {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val _state = MutableStateFlow<AuthState>(AuthState.Loading)
     private var syncCoordinator: SyncCoordinator? = null
-    private var session: SupabaseSession? = sessionStore.load()
 
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
     init {
-        scope.launch { refreshSession() }
+        scope.launch {
+            // Restore session from store
+            val savedSession = withContext(Dispatchers.IO) { sessionStore.load() }
+            if (savedSession != null) {
+                try {
+                    @OptIn(ExperimentalTime::class)
+                    val userSession = UserSession(
+                        accessToken = savedSession.accessToken,
+                        refreshToken = savedSession.refreshToken,
+                        expiresIn = 3600.seconds.inWholeSeconds,
+                        tokenType = savedSession.tokenType,
+                        user = null, // Will be fetched by SDK
+                        expiresAt = Instant.fromEpochSeconds(savedSession.expiresAtEpochSeconds),
+                    )
+                    client.supabaseClient.auth.importSession(userSession)
+                    _state.value = AuthState.SignedIn(savedSession.user)
+                } catch (e: Exception) {
+                    _state.value = AuthState.SignedOut
+                }
+            } else {
+                _state.value = AuthState.SignedOut
+            }
+
+            observeSessionStatus()
+        }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private suspend fun observeSessionStatus() {
+        client.supabaseClient.auth.sessionStatus.collectLatest { status ->
+            when (status) {
+                is SessionStatus.Authenticated -> {
+                    val session = status.session
+                    val user = session.user
+                    if (user != null) {
+                        val userSummary = UserSummary(user.id, user.email)
+                        
+                        // Persist session
+                        withContext(Dispatchers.IO) {
+                            sessionStore.save(
+                                SupabaseSession(
+                                    accessToken = session.accessToken,
+                                    refreshToken = session.refreshToken ?: "",
+                                    tokenType = session.tokenType,
+                                    expiresAtEpochSeconds = session.expiresAt.epochSeconds,
+                                    user = userSummary,
+                                )
+                            )
+                        }
+
+                        emitSignedIn(userSummary)
+                        syncCoordinator?.runMigrationIfNeeded()
+                    }
+                }
+                is SessionStatus.NotAuthenticated -> {
+                    withContext(Dispatchers.IO) { sessionStore.clear() }
+                    emitSignedOut()
+                }
+                else -> {
+                    // Other states
+                }
+            }
+        }
     }
 
     fun attachSyncCoordinator(syncCoordinator: SyncCoordinator) {
@@ -34,48 +102,28 @@ class SupabaseAuthManager(
     }
 
     suspend fun verifyOTP(email: String, token: String) {
-        val newSession = withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             client.verifyOtp(email.trim(), token.trim())
         }
-        persistSession(newSession)
-        emitSignedIn(newSession.user)
-        syncCoordinator?.runMigrationIfNeeded()
-    }
-
-    suspend fun refreshSession() {
-        val current = session ?: sessionStore.load()
-        if (current == null) {
-            emitSignedOut()
-            return
-        }
-
-        if (current.isExpired) {
-            sessionStore.clear()
-            session = null
-            emitSignedOut()
-            return
-        }
-
-        val user = withContext(Dispatchers.IO) {
-            client.fetchCurrentUser(current.accessToken)
-        }
-        if (user == null) {
-            sessionStore.clear()
-            session = null
-            emitSignedOut()
-            return
-        }
-
-        val refreshed = current.copy(user = user)
-        persistSession(refreshed)
-        emitSignedIn(refreshed.user)
-        syncCoordinator?.runMigrationIfNeeded()
+        // No need to manually persist or emit, observeSessionStatus will handle it
     }
 
     suspend fun signOut() {
-        sessionStore.clear()
-        session = null
-        emitSignedOut()
+        withContext(Dispatchers.IO) {
+            client.supabaseClient.auth.signOut()
+        }
+    }
+
+    suspend fun refreshSession() {
+        withContext(Dispatchers.IO) {
+            try {
+                if (client.supabaseClient.auth.currentSessionOrNull() != null) {
+                    client.supabaseClient.auth.refreshCurrentSession()
+                }
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }
     }
 
     override val isAuthenticated: Boolean
@@ -85,18 +133,17 @@ class SupabaseAuthManager(
         get() = currentUser?.id
 
     override val accessToken: String?
-        get() = session?.accessToken
+        get() = client.supabaseClient.auth.currentSessionOrNull()?.accessToken
 
     override val currentUser: UserSummary?
-        get() = when (val state = _state.value) {
-            is AuthState.SignedIn -> state.user
-            else -> session?.user
+        get() = when (val s = _state.value) {
+            is AuthState.SignedIn -> s.user
+            else -> {
+                client.supabaseClient.auth.currentUserOrNull()?.let {
+                    UserSummary(it.id, it.email)
+                }
+            }
         }
-
-    private fun persistSession(newSession: SupabaseSession) {
-        session = newSession
-        sessionStore.save(newSession)
-    }
 
     private fun emitSignedIn(user: UserSummary) {
         _state.value = AuthState.SignedIn(user)
