@@ -28,6 +28,7 @@ struct AuthView: View {
                     .padding(.vertical, 28)
                 }
             }
+            .loadingIndicator(isBusy)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

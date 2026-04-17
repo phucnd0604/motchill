@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		44275316F121033B65345D97 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60E35DF450A83DEA5F566362 /* Foundation.framework */; };
 		5E312E562F8BDC5D00C90FED /* SwiftSubtitles in Frameworks */ = {isa = PBXBuildFile; productRef = 5E312E552F8BDC5D00C90FED /* SwiftSubtitles */; };
+		5E88CAAF2F925F95008A35E2 /* DotLottie in Frameworks */ = {isa = PBXBuildFile; productRef = 5E88CAAE2F925F95008A35E2 /* DotLottie */; };
+		5E88CAB12F925F95008A35E2 /* DotLottiePlayer in Frameworks */ = {isa = PBXBuildFile; productRef = 5E88CAB02F925F95008A35E2 /* DotLottiePlayer */; };
 		5EB4882F2F8A8A88007251E8 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = 5EB4882E2F8A8A88007251E8 /* Flow */; };
 		5EF698AC2F8BB0B4003CDE04 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */; };
 		68A94BEF2F889C5600C59159 /* SwiftyBeaver in Frameworks */ = {isa = PBXBuildFile; productRef = 68A94BEE2F889C5600C59159 /* SwiftyBeaver */; };
@@ -39,6 +41,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		413A8F81BD9B7F93E38FA080 /* Features */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Features; sourceTree = "<group>"; };
+		5E88CABC2F9261DF008A35E2 /* animations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = animations; sourceTree = "<group>"; };
 		68A94BB72F88906100C59159 /* Core */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Core; sourceTree = "<group>"; };
 		68A94BBD2F88906100C59159 /* Data */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Data; sourceTree = "<group>"; };
 		68A94BC02F88906100C59159 /* Domain */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Domain; sourceTree = "<group>"; };
@@ -58,7 +61,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E88CAB12F925F95008A35E2 /* DotLottiePlayer in Frameworks */,
 				44275316F121033B65345D97 /* Foundation.framework in Frameworks */,
+				5E88CAAF2F925F95008A35E2 /* DotLottie in Frameworks */,
 				A0A0A0A0A0A0A0A0A0A0A0A0 /* Alamofire in Frameworks */,
 				5EB4882F2F8A8A88007251E8 /* Flow in Frameworks */,
 				BD7123923FB4CC70C416690A /* Kingfisher in Frameworks */,
@@ -102,6 +107,7 @@
 				5EF698AD2F8BB1BC003CDE04 /* PhucTvSwiftUI-Info.plist */,
 				5EF698AB2F8BB0B4003CDE04 /* Launch Screen.storyboard */,
 				6AC200000000000000000021 /* Assets.xcassets */,
+				5E88CABC2F9261DF008A35E2 /* animations */,
 				ACEFC3480ADB54016DB46690 /* App */,
 				68A94BB72F88906100C59159 /* Core */,
 				68A94BBD2F88906100C59159 /* Data */,
@@ -130,6 +136,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				413A8F81BD9B7F93E38FA080 /* Features */,
+				5E88CABC2F9261DF008A35E2 /* animations */,
 				68A94BB72F88906100C59159 /* Core */,
 				68A94BBD2F88906100C59159 /* Data */,
 				68A94BC02F88906100C59159 /* Domain */,
@@ -143,6 +150,8 @@
 				5EB4882E2F8A8A88007251E8 /* Flow */,
 				5E312E552F8BDC5D00C90FED /* SwiftSubtitles */,
 				F1F1F1F1F1F1F1F1F1F1F1F1 /* Supabase */,
+				5E88CAAE2F925F95008A35E2 /* DotLottie */,
+				5E88CAB02F925F95008A35E2 /* DotLottiePlayer */,
 			);
 			productName = PhucTvSwiftUI;
 			productReference = C6D71A602C00353F1003A1BD /* PhucTV.app */;
@@ -204,6 +213,7 @@
 				5EB4882D2F8A8A88007251E8 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 				5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */,
 				D1D1D1D1D1D1D1D1D1D1D1D1 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				5E88CAAD2F925F95008A35E2 /* XCRemoteSwiftPackageReference "dotlottie-ios" */,
 			);
 			productRefGroup = 24B62C632F1E5C474C2029A7 /* Products */;
 			projectDirPath = "";
@@ -555,6 +565,14 @@
 				minimumVersion = 2.2.0;
 			};
 		};
+		5E88CAAD2F925F95008A35E2 /* XCRemoteSwiftPackageReference "dotlottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/LottieFiles/dotlottie-ios";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		5EB4882D2F8A8A88007251E8 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow";
@@ -599,6 +617,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5E312E542F8BDC5D00C90FED /* XCRemoteSwiftPackageReference "SwiftSubtitles" */;
 			productName = SwiftSubtitles;
+		};
+		5E88CAAE2F925F95008A35E2 /* DotLottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5E88CAAD2F925F95008A35E2 /* XCRemoteSwiftPackageReference "dotlottie-ios" */;
+			productName = DotLottie;
+		};
+		5E88CAB02F925F95008A35E2 /* DotLottiePlayer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5E88CAAD2F925F95008A35E2 /* XCRemoteSwiftPackageReference "dotlottie-ios" */;
+			productName = DotLottiePlayer;
 		};
 		5EB4882E2F8A8A88007251E8 /* Flow */ = {
 			isa = XCSwiftPackageProductDependency;

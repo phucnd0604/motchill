@@ -14,13 +14,11 @@ struct AppShellView: View {
             HomeView(router: router)
             .navigationDestination(for: AppRoute.self, destination: destinationView)
             .overlay(alignment: .top) {
-                if let hint = authManager.signInHint {
+                if let banner = authBanner {
                     AuthBanner(
-                        message: hint,
-                        buttonTitle: authManager.isAuthenticated ? nil : "Đăng nhập",
-                        onButtonTap: {
-                            showAuthSheet = true
-                        }
+                        message: banner.message,
+                        buttonTitle: banner.buttonTitle,
+                        onButtonTap: banner.action
                     )
                     .padding(.top, 12)
                     .padding(.horizontal, 16)
@@ -31,6 +29,37 @@ struct AppShellView: View {
                 AuthView(authManager: authManager)
             }
         }
+    }
+
+    private var authBanner: AuthBannerContent? {
+        if authManager.isAuthenticated {
+            let email = authManager.userSummary?.email?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let message = if let email, !email.isEmpty {
+                "Đang đăng nhập với \(email)."
+            } else {
+                "Đang đăng nhập."
+            }
+
+            return AuthBannerContent(
+                message: message,
+                buttonTitle: "Đăng xuất",
+                action: {
+                    Task { await authManager.signOut() }
+                }
+            )
+        }
+
+        guard let hint = authManager.signInHint else {
+            return nil
+        }
+
+        return AuthBannerContent(
+            message: hint,
+            buttonTitle: "Đăng nhập",
+            action: {
+                showAuthSheet = true
+            }
+        )
     }
 
     @ViewBuilder
@@ -54,9 +83,15 @@ struct AppShellView: View {
     }
 }
 
+private struct AuthBannerContent {
+    let message: String
+    let buttonTitle: String
+    let action: () -> Void
+}
+
 private struct AuthBanner: View {
     let message: String
-    let buttonTitle: String?
+    let buttonTitle: String
     let onButtonTap: () -> Void
 
     var body: some View {
@@ -66,11 +101,9 @@ private struct AuthBanner: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let buttonTitle {
-                Button(buttonTitle, action: onButtonTap)
-                    .font(.footnote.weight(.semibold))
-                    .buttonStyle(.borderedProminent)
-            }
+            Button(buttonTitle, action: onButtonTap)
+                .font(.footnote.weight(.semibold))
+                .buttonStyle(.borderedProminent)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
