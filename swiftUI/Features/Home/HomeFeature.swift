@@ -1,111 +1,207 @@
 import ComposableArchitecture
-import SwiftUI
+import Foundation
 
 @Reducer
 struct HomeFeature {
+    enum CancelID {
+        case load
+    }
+
+    struct LoadError: Equatable, Sendable, Error {
+        let message: String
+
+        init(_ error: Error) {
+            message = String(describing: error)
+        }
+    }
+
     @ObservableState
     struct State: Equatable {
-        var title = "PhucTv SwiftUI"
-        var subtitle = "Navigation shell placeholder"
-        var bodyText = "Phase 2 wires the app shell into TCA. Feature logic will be mapped in later phases."
+        var status: HomeScreenState = .loading
+        var selectedSection: PhucTvHomeSection?
+        var selectedMovie: PhucTvMovieCard?
+
+        var loadedContent: HomeFeedContent? {
+            if case let .loaded(content) = status {
+                return content
+            }
+            return nil
+        }
+
+        var sections: [PhucTvHomeSection] {
+            loadedContent?.sections ?? []
+        }
+
+        var heroSection: PhucTvHomeSection? {
+            sections.first(where: { $0.key == "slide" }) ?? sections.first
+        }
+
+        var heroMovies: [PhucTvMovieCard] {
+            Array(heroSection?.products.prefix(6) ?? [])
+        }
+
+        var contentSections: [PhucTvHomeSection] {
+            guard sections.contains(where: { $0.key == "slide" }) else {
+                return sections
+            }
+
+            return sections.filter { $0.key != "slide" }
+        }
+
+        var hasRenderableContent: Bool {
+            sections.contains(where: { !$0.products.isEmpty })
+        }
+
+        static func previewLoaded() -> Self {
+            var state = Self(
+                status: .loaded(HomeFeedContent(sections: HomeMockData.loadedSections))
+            )
+            HomeFeature.reconcileSelection(&state, with: HomeMockData.loadedSections)
+            return state
+        }
+
+        static func previewLoading() -> Self {
+            Self(status: .loading)
+        }
+
+        static func previewEmpty() -> Self {
+            Self(status: .empty)
+        }
+
+        static func previewError() -> Self {
+            Self(status: .error(message: "Không thể tải nội dung ngay lúc này."))
+        }
     }
 
     @CasePathable
     enum Action: Equatable {
+        case onTask
+        case retryTapped
+        case sectionSelected(PhucTvHomeSection?)
+        case movieSelected(PhucTvMovieCard?)
+        case loadResponse(Result<[PhucTvHomeSection], LoadError>)
         case searchTapped
-        case detailTapped
+        case detailTapped(movie: PhucTvMovieCard)
         case playerTapped
     }
 
+    @Dependency(\.phucTvRepository) var repository
+    @Dependency(\.phucTvRemoteConfigClient) var remoteConfigClient
+    @Dependency(\.phucTvRemoteConfigStore) var remoteConfigStore
+
     var body: some ReducerOf<Self> {
-        Reduce { _, _ in
-            .none
-        }
-    }
-}
+        Reduce { state, action in
+            switch action {
+            case .onTask, .retryTapped:
+                state.status = .loading
+                return loadHome()
 
-struct HomeFeatureView: View {
-    @Bindable var store: StoreOf<HomeFeature>
+            case let .sectionSelected(section):
+                Self.applySectionSelection(&state, section: section)
+                return .none
 
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.09, green: 0.10, blue: 0.14),
-                    Color(red: 0.14, green: 0.09, blue: 0.17),
-                    Color(red: 0.05, green: 0.05, blue: 0.08)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            case let .movieSelected(movie):
+                Self.applyMovieSelection(&state, movie: movie)
+                return .none
 
-            VStack(alignment: .leading, spacing: 20) {
-                header
-                buttons
-            }
-            .frame(maxWidth: 560)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 32)
-        }
-    }
+            case let .loadResponse(.success(sections)):
+                if sections.isEmpty {
+                    state.status = .empty
+                    return .none
+                }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(store.title)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                state.status = .loaded(HomeFeedContent(sections: sections))
+                Self.reconcileSelection(&state, with: sections)
+                return .none
 
-            Text(store.subtitle)
-                .font(.headline)
-                .foregroundStyle(.white.opacity(0.82))
+            case let .loadResponse(.failure(error)):
+                state.status = .error(message: error.message)
+                return .none
 
-            Text(store.bodyText)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.68))
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    private var buttons: some View {
-        VStack(spacing: 12) {
-            Button {
-                store.send(.searchTapped)
-            } label: {
-                label("Open Search", systemImage: "magnifyingglass")
-            }
-
-            Button {
-                store.send(.detailTapped)
-            } label: {
-                label("Open Detail", systemImage: "film")
-            }
-
-            Button {
-                store.send(.playerTapped)
-            } label: {
-                label("Open Player", systemImage: "play.fill")
+            case .searchTapped, .detailTapped, .playerTapped:
+                return .none
             }
         }
     }
 
-    private func label(_ title: String, systemImage: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: systemImage)
-            Text(title)
-                .fontWeight(.semibold)
-            Spacer(minLength: 0)
+    private func loadHome() -> Effect<Action> {
+        let remoteConfigClient = remoteConfigClient
+        let remoteConfigStore = remoteConfigStore
+        let repository = repository
+
+        return .run { send in
+            do {
+                let remoteConfig = try await remoteConfigClient.fetchRemoteConfig()
+                remoteConfigStore.update(remoteConfig)
+
+                let sections = try await repository.loadHome()
+                await send(.loadResponse(.success(sections)))
+            } catch is CancellationError {
+                return
+            } catch {
+                PhucTvLogger.shared.error(
+                    error,
+                    message: "Home load failed",
+                    metadata: [
+                        "state": "home"
+                    ]
+                )
+                await send(.loadResponse(.failure(.init(error))))
+            }
         }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.white.opacity(0.10))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(.white.opacity(0.12), lineWidth: 1)
-        )
+        .cancellable(id: CancelID.load, cancelInFlight: true)
+    }
+
+    private static func applySectionSelection(
+        _ state: inout State,
+        section: PhucTvHomeSection?
+    ) {
+        guard let section else {
+            state.selectedSection = nil
+            state.selectedMovie = nil
+            return
+        }
+
+        let refreshedSection = state.sections.first(where: { $0.id == section.id }) ?? section
+        state.selectedSection = refreshedSection
+        applyMovieSelection(&state, movie: state.selectedMovie)
+    }
+
+    private static func applyMovieSelection(
+        _ state: inout State,
+        movie: PhucTvMovieCard?
+    ) {
+        guard let section = state.selectedSection else {
+            state.selectedMovie = movie
+            return
+        }
+
+        if let movie {
+            state.selectedMovie = section.products.first(where: { $0.id == movie.id })
+                ?? section.products.first
+        } else {
+            state.selectedMovie = section.products.first
+        }
+    }
+
+    private static func reconcileSelection(
+        _ state: inout State,
+        with sections: [PhucTvHomeSection]
+    ) {
+        guard let selectedSection = state.selectedSection,
+              let refreshedSection = sections.first(where: { $0.id == selectedSection.id }) else {
+            state.selectedSection = sections.first
+            state.selectedMovie = sections.first?.products.first
+            return
+        }
+
+        state.selectedSection = refreshedSection
+
+        if let selectedMovie = state.selectedMovie,
+           let refreshedMovie = refreshedSection.products.first(where: { $0.id == selectedMovie.id }) {
+            state.selectedMovie = refreshedMovie
+        } else {
+            state.selectedMovie = refreshedSection.products.first
+        }
     }
 }

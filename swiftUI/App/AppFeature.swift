@@ -51,12 +51,15 @@ struct AppFeature {
                 state.path.append(.search(SearchFeature.State()))
                 return .none
 
-            case .home(.detailTapped):
-                state.path.append(.detail(Self.makeDetailState()))
+            case let .home(.detailTapped(movie: movie)):
+                state.path.append(.detail(Self.makeDetailState(movie: movie)))
                 return .none
 
             case .home(.playerTapped):
                 state.path.append(.player(Self.makePlayerState()))
+                return .none
+
+            case .home:
                 return .none
 
             case let .path(.element(id: id, action: .search(.backButtonTapped))),
@@ -152,13 +155,8 @@ struct AppFeature {
         )
     }
 
-    private static func makeDetailState() -> DetailFeature.State {
-        let movie = placeholderMovie
-        return DetailFeature.State(
-            movieTitle: movie.displayTitle,
-            movieSubtitle: movie.displaySubtitle,
-            summary: "Placeholder detail screen. Phase 3 will map the existing detail view model here."
-        )
+    private static func makeDetailState(movie: PhucTvMovieCard) -> DetailFeature.State {
+        DetailFeature.State(movie: movie)
     }
 
     private static func makePlayerState() -> PlayerFeature.State {

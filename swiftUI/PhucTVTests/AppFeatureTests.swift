@@ -19,7 +19,7 @@ struct AppFeatureTests {
             $0.configurePhucTvDependencies(AppDependencies.test(authManager: authManager))
         }
 
-        #expect(store.state.home.title == "PhucTv SwiftUI")
+        #expect(store.state.home.status == .loading)
         #expect(store.state.path.isEmpty)
 
         await store.send(.task) {
@@ -45,14 +45,10 @@ struct AppFeatureTests {
         let store = makeStore()
         let movie = placeholderMovie()
 
-        await store.send(.home(.detailTapped)) {
+        await store.send(.home(.detailTapped(movie: movie))) {
             $0.path.append(
                 .detail(
-                    DetailFeature.State(
-                        movieTitle: movie.displayTitle,
-                        movieSubtitle: movie.displaySubtitle,
-                        summary: "Placeholder detail screen. Phase 3 will map the existing detail view model here."
-                    )
+                    DetailFeature.State(movie: movie)
                 )
             )
         }
@@ -62,7 +58,7 @@ struct AppFeatureTests {
             return
         }
 
-        #expect(detailState.movieTitle == movie.displayTitle)
+        #expect(detailState.movie.id == movie.id)
     }
 
     @Test
@@ -115,14 +111,10 @@ struct AppFeatureTests {
         await store.send(.home(.searchTapped)) {
             $0.path.append(.search(SearchFeature.State()))
         }
-        await store.send(.home(.detailTapped)) {
+        await store.send(.home(.detailTapped(movie: placeholderMovie()))) {
             $0.path.append(
                 .detail(
-                    DetailFeature.State(
-                        movieTitle: placeholderMovie().displayTitle,
-                        movieSubtitle: placeholderMovie().displaySubtitle,
-                        summary: "Placeholder detail screen. Phase 3 will map the existing detail view model here."
-                    )
+                    DetailFeature.State(movie: placeholderMovie())
                 )
             )
         }

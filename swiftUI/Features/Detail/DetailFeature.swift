@@ -5,9 +5,36 @@ import SwiftUI
 struct DetailFeature {
     @ObservableState
     struct State: Equatable {
-        var movieTitle = "Detail"
-        var movieSubtitle = "Placeholder screen for phase 2"
-        var summary = "The existing detail view model will be mapped here in a later phase."
+        var movie: PhucTvMovieCard
+
+        init(movie: PhucTvMovieCard = .empty) {
+            self.movie = movie
+        }
+
+        var movieTitle: String {
+            movie.displayTitle
+        }
+
+        var movieSubtitle: String {
+            movie.displaySubtitle
+        }
+
+        var summary: String {
+            let candidates = [
+                movie.description,
+                movie.moreInfo,
+                movie.displaySubtitle
+            ]
+
+            for candidate in candidates {
+                let trimmed = candidate.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    return trimmed
+                }
+            }
+
+            return "The existing detail view model will be mapped here in a later phase."
+        }
     }
 
     @CasePathable

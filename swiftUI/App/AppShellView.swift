@@ -6,7 +6,7 @@ struct AppShellView: View {
     
     var body: some View {
         NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
-            HomeFeatureView(store: store.scope(state: \.home, action: \.home))
+            HomeView(store: store.scope(state: \.home, action: \.home))
         } destination: { store in
             switch store.case {
             case .search(let store):
