@@ -5,8 +5,9 @@ This folder breaks the SwiftUI-to-TCA migration into small, ordered tasks so we 
 ## Progress
 
 - Phase 1, `01-setup-tca.md`, is done.
-- The app now has a TCA foundation layer and a root `AppFeature` scaffold.
-- The next phase is app shell and navigation migration.
+- Phase 2, `02-app-shell-navigation.md`, is done.
+- The app now has a TCA foundation layer, a root `AppFeature`, and a TCA shell navigation stack.
+- The next phase is feature-by-feature migration into the placeholder reducers.
 
 ## Reading Order
 

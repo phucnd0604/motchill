@@ -3,8 +3,9 @@
 ## Status
 
 - Phase 1 is complete.
+- Phase 2 is complete.
 - TCA package integration is in place.
-- The app has a root `AppFeature` scaffold and dependency registration for the first migration slice.
+- The app has a root `AppFeature`, dependency registration, and a TCA shell navigation stack.
 
 ## Goal
 
@@ -12,7 +13,7 @@ Move the SwiftUI app from `@Observable` MVVM and custom routing to TCA in a cont
 
 ## Current State
 
-- App shell uses `AppShellView`, `AppRouter`, and `AppRoute`.
+- App shell uses `AppShellView`, `AppRoute`, and TCA navigation state.
 - Feature screens are currently driven by view models:
   - `HomeViewModel`
   - `SearchViewModel`
@@ -30,7 +31,7 @@ Move the SwiftUI app from `@Observable` MVVM and custom routing to TCA in a cont
 
 - Build a small TCA foundation first. This is now complete.
 - Convert the shell and routing layer before migrating feature logic.
-- Migrate features in this order:
+- Migrate the real feature logic into the placeholder reducers in this order:
   1. Home
   2. Search
   3. Detail
@@ -64,4 +65,15 @@ Phase 1 established the minimum TCA runtime boundary needed for the rest of the 
 - created a root `AppFeature` reducer scaffold
 - verified the app still builds after the integration
 
-This phase does not change shell routing or feature screens yet. It only prepares the app to migrate those pieces safely in later phases.
+## Phase 2 Summary
+
+Phase 2 moved the shell and navigation into TCA without migrating the legacy screen logic yet:
+
+- added a `StackState`-backed navigation path to `AppFeature`
+- introduced placeholder reducers for Home, Search, Detail, and Player
+- moved auth sheet presentation into TCA presentation state
+- refactored `AuthView` to use direct store bindings
+- kept the MVVM screens compile-ready for later phase-by-phase migration
+- verified shell routing, auth presentation, and auth callback handling with reducer tests
+
+This phase prepares the app to migrate the real screen logic safely in later phases.

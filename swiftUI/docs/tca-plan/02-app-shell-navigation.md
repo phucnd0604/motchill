@@ -1,40 +1,54 @@
 # Task 2: Move App Shell and Navigation to TCA
 
+## Status
+
+Done.
+
+The shell now uses TCA tree-based navigation with placeholder feature reducers, while the legacy MVVM screens remain in the repo for later phases.
+
 ## Goal
 
 Replace the custom router with TCA-driven app state and navigation.
 
-## Files to Touch
+## Files Updated
 
-- `swiftUI/App/AppShellView.swift`
-- `swiftUI/App/AppRouter.swift`
-- `swiftUI/App/AppRoute.swift`
-- new app feature files such as `swiftUI/App/AppFeature.swift`
-- auth presentation code that currently lives in the shell
+- [swiftUI/App/AppFeature.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/App/AppFeature.swift)
+- [swiftUI/App/AppShellView.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/App/AppShellView.swift)
+- [swiftUI/App/PhucTvSwiftUIApp.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/App/PhucTvSwiftUIApp.swift)
+- [swiftUI/App/AppDependencies+TCA.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/App/AppDependencies+TCA.swift)
+- [swiftUI/Features/Auth/AuthFeature.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/Features/Auth/AuthFeature.swift)
+- [swiftUI/Features/Auth/AuthView.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/Features/Auth/AuthView.swift)
+- [swiftUI/Features/Home/HomeFeature.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/Features/Home/HomeFeature.swift)
+- [swiftUI/Features/Search/SearchFeature.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/Features/Search/SearchFeature.swift)
+- [swiftUI/Features/Detail/DetailFeature.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/Features/Detail/DetailFeature.swift)
+- [swiftUI/Features/Player/PlayerFeature.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/Features/Player/PlayerFeature.swift)
+- [swiftUI/Features/Common/PlaceholderFeatureScreen.swift](/Users/inyourdream./Work/swift-projects/motchill/motchill/swiftUI/Features/Common/PlaceholderFeatureScreen.swift)
 
-## Implementation Steps
+## What Was Implemented
 
-1. Model app-wide state in a reducer.
-2. Move route stack state into TCA navigation state.
-3. Convert `onOpenURL` handling into an action/effect path.
-4. Move auth banner visibility and sheet presentation into the reducer.
-5. Update `AppShellView` to read from a `Store`.
-6. Keep the route enum shape stable if possible so feature migration is easier.
-7. Remove direct shell dependence on `AppRouter` once TCA navigation is working.
+1. Root shell state now owns a `StackState`-backed navigation path.
+2. The shell presents `HomeFeature`, `SearchFeature`, `DetailFeature`, and `PlayerFeature` as placeholder reducers instead of forwarding to the old router.
+3. Auth sheet presentation moved into TCA presentation state with `@Presents`.
+4. `AuthFeature` became a standalone reducer and `AuthView` now binds directly to the store.
+5. `onOpenURL` now flows through `AppFeature` so the shell can react through reducer logic.
+6. The dependency bridge uses TCA dependency clients, not SwiftUI environment injection.
+7. The legacy `AppRouter` and MVVM screens were kept intact for later phases, but the shell no longer depends on them as the source of truth.
 
 ## Test Plan
 
-- Add reducer tests for:
+- Reducer tests cover:
   - push search route
   - push detail route
   - push player route
   - pop route
-  - present auth sheet
+  - pop-to-root
+  - present and dismiss auth sheet
   - handle auth callback URL
-- Confirm the shell still launches and renders the correct initial screen.
+- Shell smoke coverage confirms the root still launches and reaches the placeholder feature flow.
 
 ## Acceptance Criteria
 
 - App navigation is controlled by TCA state.
-- `AppRouter` is no longer required for new navigation work.
-- Search/detail/player can still be reached through the shell.
+- `AppRouter` is no longer the shell source of truth.
+- Search/detail/player are reachable through the TCA navigation stack.
+- Auth banner and auth sheet are driven by reducer state.
