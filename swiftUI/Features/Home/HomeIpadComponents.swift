@@ -10,6 +10,8 @@ import Kingfisher
 import SwiftUI
 import UIKit
 
+/// The primary layout container for the iPad Home screen.
+/// It observes the `HomeFeature` state to switch between loading, empty, error, and loaded UI views.
 struct HomeIpadScreen: View {
     @Bindable var store: StoreOf<HomeFeature>
 

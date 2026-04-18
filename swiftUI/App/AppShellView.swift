@@ -24,7 +24,7 @@ struct AppShellView: View {
                     buttonTitle: banner.buttonTitle,
                     onButtonTap: { store.send(.authBannerButtonTapped) }
                 )
-                .padding(.top, 12)
+                .padding(.top, 80)
                 .padding(.horizontal, 16)
                 .transition(.move(edge: .top).combined(with: .opacity))
             }

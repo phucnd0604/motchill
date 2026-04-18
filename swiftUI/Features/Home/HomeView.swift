@@ -1,6 +1,8 @@
 import ComposableArchitecture
 import SwiftUI
 
+/// The main view for the Home feature, serving as the entry point for the Home tab.
+/// It observes a `StoreOf<HomeFeature>` to render the UI state and dispatches user actions back to the store.
 struct HomeView: View {
     @Bindable var store: StoreOf<HomeFeature>
 

@@ -1,6 +1,8 @@
 import ComposableArchitecture
 import Foundation
 
+/// The TCA reducer managing the state and logic for the Home screen.
+/// It handles data fetching, user selections (sections/movies), and forwards navigation intents to the app shell.
 @Reducer
 struct HomeFeature {
     enum CancelID {
@@ -15,6 +17,7 @@ struct HomeFeature {
         }
     }
 
+    /// The state of the Home feature, encompassing UI loading status, fetched sections, and user selections.
     @ObservableState
     struct State: Equatable {
         var status: HomeScreenState = .loading
@@ -73,6 +76,7 @@ struct HomeFeature {
         }
     }
 
+    /// The actions that can occur in the Home feature, including user interactions, binding updates, and network responses.
     enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
         case onTask
@@ -82,6 +86,8 @@ struct HomeFeature {
         case detailTapped(movie: PhucTvMovieCard)
         case playerTapped
     }
+
+    // MARK: - Dependencies
 
     @Dependency(\.phucTvRepository) var repository
     @Dependency(\.phucTvRemoteConfigClient) var remoteConfigClient
@@ -126,6 +132,8 @@ struct HomeFeature {
         }
     }
 
+    /// Triggers the side effect to load remote configuration and home feed data from the repository.
+    /// - Returns: An effect that emits a `.loadResponse` action.
     private func loadHome() -> Effect<Action> {
         let remoteConfigClient = remoteConfigClient
         let remoteConfigStore = remoteConfigStore
@@ -154,6 +162,11 @@ struct HomeFeature {
         .cancellable(id: CancelID.load, cancelInFlight: true)
     }
 
+    /// Applies a new section selection and automatically selects the first available movie in that section,
+    /// or preserves the currently selected movie if it also exists in the new section.
+    /// - Parameters:
+    ///   - state: The current state to mutate.
+    ///   - section: The newly selected section, or `nil` to clear the selection.
     private static func applySectionSelection(
         _ state: inout State,
         section: PhucTvHomeSection?
@@ -186,6 +199,12 @@ struct HomeFeature {
         }
     }
 
+    /// Reconciles the existing selection state with newly loaded data.
+    /// This ensures that after a successful data fetch or retry, the UI does not lose the user's current section and movie selection,
+    /// provided they still exist in the new data.
+    /// - Parameters:
+    ///   - state: The current state to mutate.
+    ///   - sections: The newly fetched home sections.
     private static func reconcileSelection(
         _ state: inout State,
         with sections: [PhucTvHomeSection]
