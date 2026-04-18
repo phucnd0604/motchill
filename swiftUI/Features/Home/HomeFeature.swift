@@ -73,12 +73,10 @@ struct HomeFeature {
         }
     }
 
-    @CasePathable
-    enum Action: Equatable {
+    enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
         case onTask
         case retryTapped
-        case sectionSelected(PhucTvHomeSection?)
-        case movieSelected(PhucTvMovieCard?)
         case loadResponse(Result<[PhucTvHomeSection], LoadError>)
         case searchTapped
         case detailTapped(movie: PhucTvMovieCard)
@@ -90,18 +88,19 @@ struct HomeFeature {
     @Dependency(\.phucTvRemoteConfigStore) var remoteConfigStore
 
     var body: some ReducerOf<Self> {
+        BindingReducer()
         Reduce { state, action in
             switch action {
             case .onTask, .retryTapped:
                 state.status = .loading
                 return loadHome()
 
-            case let .sectionSelected(section):
-                Self.applySectionSelection(&state, section: section)
+            case .binding(\.selectedSection):
+                Self.applySectionSelection(&state, section: state.selectedSection)
                 return .none
 
-            case let .movieSelected(movie):
-                Self.applyMovieSelection(&state, movie: movie)
+            case .binding(\.selectedMovie):
+                Self.applyMovieSelection(&state, movie: state.selectedMovie)
                 return .none
 
             case let .loadResponse(.success(sections)):
@@ -119,6 +118,9 @@ struct HomeFeature {
                 return .none
 
             case .searchTapped, .detailTapped, .playerTapped:
+                return .none
+
+            case .binding:
                 return .none
             }
         }

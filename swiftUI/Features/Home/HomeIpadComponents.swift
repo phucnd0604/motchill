@@ -87,34 +87,15 @@ private func openTrailer(_ trailer: String) {
 private struct HomeIpadLoadedContent: View {
     @Bindable var store: StoreOf<HomeFeature>
     let heroMovies: [PhucTvMovieCard]
-
-    private var selectedHeroID: Binding<Int?> {
-        Binding<Int?>(
-            get: { store.selectedMovie?.id },
-            set: { newID in
-                guard let newID else {
-                    store.send(.movieSelected(nil))
-                    return
-                }
-                store.send(.movieSelected(heroMovies.first(where: { $0.id == newID })))
-            }
-        )
-    }
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             FeaturePagingView(
-                selectedID: selectedHeroID,
+                selectedItem: $store.selectedMovie,
                 items: heroMovies,
                 spacing: 0,
                 horizontalPadding: 0,
-                onSelectionChanged: { newID in
-                    guard let newID else {
-                        store.send(.movieSelected(nil))
-                        return
-                    }
-                    store.send(.movieSelected(heroMovies.first(where: { $0.id == newID })))
-                }
+                onSelectionChanged: nil
             ) { currentMovie in
                 HomeIpadHeroCardView(
                     movie: currentMovie,
@@ -136,10 +117,7 @@ private struct HomeIpadLoadedContent: View {
             }
             
             HomeIpadIndicator(
-                selectedMovie: Binding(
-                    get: { store.selectedMovie },
-                    set: { store.send(.movieSelected($0)) }
-                ),
+                selectedMovie: $store.selectedMovie,
                 items: heroMovies
             )
                 .padding()
@@ -148,17 +126,17 @@ private struct HomeIpadLoadedContent: View {
 
     private func syncSelectionIfNeeded() {
         guard !heroMovies.isEmpty else {
-            store.send(.movieSelected(nil))
+            store.selectedMovie = nil
             return
         }
 
         if let selectedID = store.selectedMovie?.id,
            let matched = heroMovies.first(where: { $0.id == selectedID }) {
-            store.send(.movieSelected(matched))
+            store.selectedMovie = matched
             return
         }
 
-        store.send(.movieSelected(heroMovies.first))
+        store.selectedMovie = heroMovies.first
     }
 }
 

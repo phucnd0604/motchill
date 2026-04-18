@@ -134,7 +134,7 @@ struct HomeFeatureTests {
         let store = makeLoadedStore()
         let targetSection = HomeMockData.loadedSections[1]
 
-        await store.send(.sectionSelected(targetSection)) {
+        await store.send(\.binding.selectedSection, targetSection) {
             $0.selectedSection = targetSection
             $0.selectedMovie = targetSection.products.first
         }
@@ -171,12 +171,12 @@ struct HomeFeatureTests {
         let targetSection = HomeMockData.loadedSections[2]
         let targetMovie = targetSection.products[1]
 
-        await store.send(.sectionSelected(targetSection)) {
+        await store.send(\.binding.selectedSection, targetSection) {
             $0.selectedSection = targetSection
             $0.selectedMovie = targetSection.products.first
         }
 
-        await store.send(.movieSelected(targetMovie)) {
+        await store.send(\.binding.selectedMovie, targetMovie) {
             $0.selectedMovie = targetMovie
         }
 
