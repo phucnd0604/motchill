@@ -41,6 +41,22 @@ struct AppFeatureTests {
     }
 
     @Test
+    func pushDetailFromSearchRoute() async {
+        let store = makeStore()
+        let movie = placeholderMovie()
+
+        await store.send(.home(.searchTapped)) {
+            $0.path.append(.search(SearchFeature.State()))
+        }
+
+        let id = store.state.path.ids.first!
+
+        await store.send(.path(.element(id: id, action: .search(.detailTapped(movie: movie))))) {
+            $0.path.append(.detail(DetailFeature.State(movie: movie)))
+        }
+    }
+
+    @Test
     func pushDetailRoute() async {
         let store = makeStore()
         let movie = placeholderMovie()

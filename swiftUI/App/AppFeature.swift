@@ -62,6 +62,10 @@ struct AppFeature {
             case .home:
                 return .none
 
+            case let .path(.element(id: _, action: .search(.detailTapped(movie: movie)))):
+                state.path.append(.detail(Self.makeDetailState(movie: movie)))
+                return .none
+
             case let .path(.element(id: id, action: .search(.backButtonTapped))),
                  let .path(.element(id: id, action: .detail(.backButtonTapped))),
                  let .path(.element(id: id, action: .player(.backButtonTapped))):

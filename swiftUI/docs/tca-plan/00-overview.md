@@ -14,11 +14,12 @@ Move the SwiftUI app from `@Observable` MVVM and custom routing to TCA in a cont
 ## Current State
 
 - App shell uses `AppShellView`, `AppRoute`, and TCA navigation state.
-- Feature screens are currently driven by view models:
-  - `HomeViewModel`
-  - `SearchViewModel`
+- Remaining feature screens still driven by view models:
   - `DetailViewModel`
   - `PlayerViewModel`
+- Feature screens that have already moved to TCA:
+  - `HomeFeature`
+  - `SearchFeature`
 - Core services already exist and should be reused:
   - repository
   - liked movie store

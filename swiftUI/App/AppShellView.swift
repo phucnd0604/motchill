@@ -7,26 +7,26 @@ struct AppShellView: View {
     var body: some View {
         NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             HomeView(store: store.scope(state: \.home, action: \.home))
+                .overlay(alignment: .top) {
+                    if let banner = store.authBanner {
+                        AuthBanner(
+                            message: banner.message,
+                            buttonTitle: banner.buttonTitle,
+                            onButtonTap: { store.send(.authBannerButtonTapped) }
+                        )
+                        .padding(.top, 10)
+                        .padding(.horizontal, 16)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                }
         } destination: { store in
             switch store.case {
             case .search(let store):
-                SearchFeatureView(store: store)
+                SearchView(store: store)
             case .detail(let store):
                 DetailFeatureView(store: store)
             case .player(let store):
                 PlayerFeatureView(store: store)
-            }
-        }
-        .overlay(alignment: .top) {
-            if let banner = store.authBanner {
-                AuthBanner(
-                    message: banner.message,
-                    buttonTitle: banner.buttonTitle,
-                    onButtonTap: { store.send(.authBannerButtonTapped) }
-                )
-                .padding(.top, 80)
-                .padding(.horizontal, 16)
-                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
         .sheet(item: $store.scope(state: \.$auth, action: \.auth)) { store in
