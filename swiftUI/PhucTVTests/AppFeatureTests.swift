@@ -100,6 +100,47 @@ struct AppFeatureTests {
     }
 
     @Test
+    func detailPlayEpisodePushesPlayerRoute() async {
+        let movie = DetailMockData.movie
+        let episode = DetailMockData.detail.episodes[0]
+
+        var detailState = DetailFeature.State(movie: movie)
+        detailState.detail = DetailMockData.detail
+        detailState.screenState = .loaded
+        detailState.selectedTab = .episodes
+        detailState.isLiked = true
+        detailState.episodeProgressById = [
+            episode.id: PhucTvPlaybackProgressSnapshot(positionMillis: 120_000, durationMillis: 600_000)
+        ]
+
+        let store = TestStore(initialState: {
+            var state = AppFeature.State()
+            state.path.append(.detail(detailState))
+            return state
+        }()) {
+            AppFeature()
+        } withDependencies: {
+            $0.configurePhucTvDependencies(AppDependencies.test(authManager: PhucTvSupabaseAuthManager(client: nil)))
+        }
+
+        let id = store.state.path.ids.first!
+
+        await store.send(.path(.element(id: id, action: .detail(.playEpisodeTapped(episode))))) {
+            $0.path.append(
+                .player(
+                    PlayerFeature.State(
+                        movieID: DetailMockData.detail.id,
+                        episodeID: episode.id,
+                        movieTitle: DetailMockData.detail.title,
+                        episodeLabel: episode.label,
+                        summary: detailState.summary
+                    )
+                )
+            )
+        }
+    }
+
+    @Test
     func pushPlayerRoute() async {
         let store = makeStore()
         let movie = placeholderMovie()

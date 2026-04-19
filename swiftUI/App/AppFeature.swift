@@ -59,7 +59,7 @@ struct AppFeature {
                 return .none
 
             case .home(.playerTapped):
-                state.path.append(.player(Self.makePlayerState()))
+                state.path.append(.player(Self.makePlaceholderPlayerState()))
                 return .none
 
             case .home:
@@ -67,6 +67,29 @@ struct AppFeature {
 
             case let .path(.element(id: _, action: .search(.detailTapped(movie: movie)))):
                 state.path.append(.detail(Self.makeDetailState(movie: movie)))
+                return .none
+
+            case let .path(.element(id: id, action: .detail(.playEpisodeTapped(episode)))):
+                guard case let .detail(detailState)? = state.path[id: id] else {
+                    return .none
+                }
+
+                state.path.append(
+                    .player(
+                        Self.makePlayerState(
+                            detail: detailState,
+                            episode: episode
+                        )
+                    )
+                )
+                return .none
+
+            case let .path(.element(id: _, action: .detail(.relatedMovieTapped(movie)))):
+                state.path.append(.detail(Self.makeDetailState(movie: movie)))
+                return .none
+
+            case .path(.element(id: _, action: .detail(.searchTapped))):
+                state.path.append(.search(SearchFeature.State()))
                 return .none
 
             case let .path(.element(id: id, action: .search(.backButtonTapped))),
@@ -166,7 +189,20 @@ struct AppFeature {
         DetailFeature.State(movie: movie)
     }
 
-    private static func makePlayerState() -> PlayerFeature.State {
+    private static func makePlayerState(
+        detail: DetailFeature.State,
+        episode: PhucTvMovieEpisode
+    ) -> PlayerFeature.State {
+        PlayerFeature.State(
+            movieID: detail.detail?.id ?? detail.movie.id,
+            episodeID: episode.id,
+            movieTitle: detail.title,
+            episodeLabel: episode.label,
+            summary: detail.summary
+        )
+    }
+
+    private static func makePlaceholderPlayerState() -> PlayerFeature.State {
         PlayerFeature.State(
             movieID: placeholderMovie.id,
             episodeID: 1,
