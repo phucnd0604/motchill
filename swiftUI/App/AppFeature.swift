@@ -94,7 +94,7 @@ struct AppFeature {
 
             case let .path(.element(id: id, action: .search(.backButtonTapped))),
                  let .path(.element(id: id, action: .detail(.backButtonTapped))),
-                 let .path(.element(id: id, action: .player(.backButtonTapped))):
+                 let .path(.element(id: id, action: .player(.closeRequested))):
                 return .send(.popFromPath(id))
 
             case .path:

@@ -440,7 +440,7 @@ private enum SearchPreviewData {
     }
 }
 
-private func makeSearchPreviewStore() -> StoreOf<SearchFeature> {
+@MainActor private func makeSearchPreviewStore() -> StoreOf<SearchFeature> {
     var state = SearchFeature.State(
         routeInput: SearchRouteInput(initialQuery: "hero"),
         uiState: SearchUIState()

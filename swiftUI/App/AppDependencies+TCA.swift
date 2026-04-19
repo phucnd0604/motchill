@@ -350,6 +350,32 @@ extension DependencyValues {
 }
 
 @DependencyClient
+struct PhucTvPlayerSubtitleLoaderClient: Sendable {
+    var loadCues: @Sendable (_ track: PhucTvPlayTrack) async throws -> [PlayerSubtitleCue] = { _ in [] }
+}
+
+extension PhucTvPlayerSubtitleLoaderClient: DependencyKey {
+    static let liveValue = Self(
+        loadCues: { track in
+            try await PlayerSubtitleLoader().loadCues(for: track)
+        }
+    )
+
+    static let previewValue = Self(
+        loadCues: { _ in [] }
+    )
+
+    static let testValue = Self()
+}
+
+extension DependencyValues {
+    var phucTvPlayerSubtitleLoader: PhucTvPlayerSubtitleLoaderClient {
+        get { self[PhucTvPlayerSubtitleLoaderClient.self] }
+        set { self[PhucTvPlayerSubtitleLoaderClient.self] = newValue }
+    }
+}
+
+@DependencyClient
 struct PhucTvAuthManagerClient: Sendable {
     var isAuthenticated: @Sendable () -> Bool = { false }
     var userSummary: @Sendable () -> PhucTvSupabaseUserSummary? = { nil }

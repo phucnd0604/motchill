@@ -8,8 +8,10 @@ This folder breaks the SwiftUI-to-TCA migration into small, ordered tasks so we 
 - Phase 2, `02-app-shell-navigation.md`, is done.
 - Phase 3, `03-home-feature.md`, is done.
 - Phase 4, `04-search-feature.md`, is done.
-- The app now has a TCA foundation layer, a root `AppFeature`, a TCA shell navigation stack, and real reducer-backed Home and Search features.
-- Search is now also reducer-backed, and the next phases are feature-by-feature migration for Detail and Player.
+- Phase 5, `05-detail-feature.md`, is done.
+- Phase 6, `06-player-feature.md`, is done.
+- The app now has a TCA foundation layer, a root `AppFeature`, a TCA shell navigation stack, and reducer-backed Home, Search, Detail, and Player features.
+- The next phase is cleanup and stabilization to remove any remaining legacy MVVM/router leftovers.
 
 ## Reading Order
 
@@ -23,8 +25,10 @@ This folder breaks the SwiftUI-to-TCA migration into small, ordered tasks so we 
 8. [04-search-feature.md](./04-search-feature.md)
 9. [04-search-feature-result.md](./04-search-feature-result.md)
 10. [05-detail-feature.md](./05-detail-feature.md)
-11. [06-player-feature.md](./06-player-feature.md)
-12. [07-cleanup-stabilization.md](./07-cleanup-stabilization.md)
+11. [05-detail-feature-result.md](./05-detail-feature-result.md)
+12. [06-player-feature.md](./06-player-feature.md)
+13. [06-player-feature-result.md](./06-player-feature-result.md)
+14. [07-cleanup-stabilization.md](./07-cleanup-stabilization.md)
 
 ## Migration Rules
 

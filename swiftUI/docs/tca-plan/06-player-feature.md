@@ -2,88 +2,112 @@
 
 ## Goal
 
-Move player lifecycle and playback UI state into TCA while keeping the AVPlayer runtime safe.
+Move the Player screen from the legacy `PlayerViewModel` path into a reducer-owned TCA feature while keeping playback smooth.
+
+The core constraint for this phase is that `AVPlayer` must stay stable across state updates. The reducer may mutate screen state, but the same player instance must continue to power `VideoPlayer` so playback does not reset or flicker.
 
 ## Current Baseline
 
-This plan has been updated to match the codebase after Phases 3 to 5:
+This plan follows the state of the codebase after Phases 3 to 5:
 
-- Home and Search are already reducer-owned.
-- Detail is now fully migrated to TCA.
+- Home, Search, and Detail are already reducer-owned.
 - Detail -> Player navigation is already centralized in `AppFeature`.
-- Tapping an episode in Detail already appends a `PlayerFeature.State` route element with the real movie and episode payload.
-- `PlayerFeature` already exists, but it is still only a placeholder reducer and view.
-- The Player screen itself still runs through `PlayerViewModel`, `PlayerOverlay`, `PlayerSubtitleSupport`, and `PlayerView`.
+- Tapping an episode in Detail already pushes a `PlayerFeature.State` route element.
+- `PlayerFeature` is the owner of Player screen state and effects.
+- `PlayerView` and `PlayerOverlay` are store-driven SwiftUI views.
+- The legacy `PlayerViewModel.swift` has been removed.
 
-Because of that, Phase 6 is no longer about navigation plumbing. It is about moving Player screen ownership into TCA without putting `AVPlayer` itself into reducer state.
+## Scope
 
-## Files to Touch
+The Player feature now owns:
 
-- `swiftUI/Features/Player/PlayerView.swift`
-- `swiftUI/Features/Player/PlayerViewModel.swift`
-- `swiftUI/Features/Player/PlayerOverlay.swift`
-- `swiftUI/Features/Player/PlayerSubtitleSupport.swift`
-- `swiftUI/Features/Player/PlayerFeature.swift`
-- `swiftUI/Features/Player/PlayerWebView.swift`
-- `swiftUI/App/AppFeature.swift` only if the route payload needs a small adjustment after the Player state shape changes
+- movie and episode identity
+- load phase and error state
+- playback source selection
+- audio and subtitle selection
+- overlay visibility
+- current playback position and duration
+- subtitle text rendered on top of the player
+- runtime playback resources such as `AVPlayer`, time observation, and seek coordination
 
-## Implementation Steps
+## Implementation Notes
 
-1. Expand `PlayerFeature.State` so it owns the screen-facing state the UI needs.
-   - Keep the movie/episode identity and labels from Detail.
-   - Add the current load phase, source selection, overlay visibility, subtitle/audio selection, playback progress snapshot, and any web fallback state needed by the UI.
-   - Keep `AVPlayer`, timers, and other reference-heavy runtime objects out of reducer state.
+1. Keep `AVPlayer` out of observed business state.
+   - `PlayerFeature.State` stores `AVPlayer` as runtime storage with observation ignored.
+   - State mutations should copy the same player reference forward instead of creating a new player.
+   - Equality should ignore runtime-only fields so reducer updates stay focused on UI state.
 
-2. Expand `PlayerFeature.Action` to cover the whole screen lifecycle.
+2. Route all Player lifecycle and user intent through reducer actions.
    - `onAppear`
-   - `loadResponse`
+   - `onDisappear`
    - `retryTapped`
    - `backButtonTapped`
-   - source selection
-   - audio/subtitle selection
-   - subtitle toggle
-   - play/pause and seek intents
-   - overlay show/hide
-   - progress persistence and resume
-   - iframe fallback selection if the current source cannot play directly
+   - `playPauseTapped`
+   - `seek(deltaMillis:)`
+   - `seekTo(positionMillis:playAfterSeek:)`
+   - `timeUpdated`
+   - `overlayTapped`
+   - `hideOverlay`
+   - `showOverlayTemporarily`
+   - `sourceSelected`
+   - `subtitleSelected`
+   - `subtitleLoaded`
+   - `syncProgress`
+   - `syncProgressToRemote`
 
-3. Move Player side effects into reducer effects behind dependencies.
-   - Use dependencies for repository access, local playback persistence, remote playback sync, subtitle loading, and screen idle lock control.
-   - Keep the actual player runtime isolated behind a helper/client so the reducer stays testable.
-   - Preserve the current load -> resume -> play flow and make retry cancellable.
+3. Bridge player timing into TCA effects.
+   - Use a periodic time observer on `AVPlayer`.
+   - Convert the callback into an `AsyncStream`.
+   - Feed the stream into the reducer with a cancellable effect so teardown is deterministic on disappear or source changes.
 
-4. Convert `PlayerView` and the overlay UI to store-driven SwiftUI.
-   - Replace direct `PlayerViewModel` ownership with `StoreOf<PlayerFeature>`.
-   - Keep the current visual structure of the Player screen.
-   - Make `PlayerOverlay` read its state from the store instead of mutating a view model directly.
+4. Keep the view layer stable.
+   - `PlayerView` should read from `StoreOf<PlayerFeature>`.
+   - `VideoPlayer(player: store.player)` should receive the same player reference across UI updates.
+   - `PlayerOverlay` should send intents back through the store instead of mutating local view model state.
 
-5. Preserve iframe-only fallback behavior and error overlays.
-   - If the repository only returns iframe sources, keep showing a fallback path instead of crashing or hiding the player.
-   - Keep the current empty/error overlay behaviors intact.
-   - If a web fallback is still needed, route it through reducer state rather than view-local state.
+5. Keep fallback behavior intact.
+   - If a source needs iframe handling, preserve the fallback path.
+   - Keep subtitle loading and empty/error handling in the reducer flow.
 
-6. Remove the old `PlayerViewModel.swift` only after the TCA Player flow is verified.
-   - Keep the runtime-heavy pieces out of reducer state.
-   - Delete the legacy MVVM file only when the reducer-backed screen is stable in simulator smoke tests.
+6. Keep shell routing unchanged.
+   - `AppFeature` remains responsible for creating the `PlayerFeature.State` route payload.
+   - Player should not be pushed directly from the view layer.
+
+## Files Involved
+
+- `swiftUI/Features/Player/PlayerFeature.swift`
+- `swiftUI/Features/Player/PlayerView.swift`
+- `swiftUI/Features/Player/PlayerOverlay.swift`
+- `swiftUI/Features/Player/PlayerSubtitleSupport.swift`
+- `swiftUI/Features/Player/PlayerFixtures.swift`
+- `swiftUI/App/AppDependencies+TCA.swift`
+- `swiftUI/App/AppFeature.swift`
+- `swiftUI/docs/tca-plan/06-player-feature-result.md`
 
 ## Test Plan
 
-- Add reducer tests for:
-  - playable source load success
-  - no-source and iframe-only error states
+- Reducer tests for:
+  - load success and load failure
+  - retry cancellation
   - source switching
   - subtitle enable/disable
-  - overlay show/hide behavior
-  - progress persistence
-  - resume behavior
-  - close/back behavior
-  - retry cancellation
-  - iframe fallback selection if applicable
+  - overlay show/hide
+  - seek and play/pause
+  - progress persistence and resume
+  - disappear cleanup
+- Runtime identity test:
+  - ensure the same `AVPlayer` reference survives state mutations.
+- Manual smoke test:
+  - open Player
+  - play, seek, and switch source/subtitle
+  - toggle overlay
+  - leave and return
+  - verify playback stays smooth and does not reset
 
 ## Acceptance Criteria
 
-- Player behavior still works under manual testing.
+- Player behavior continues to work under manual testing.
 - Store state owns the visible UI behavior.
-- AVPlayer runtime concerns stay isolated from pure reducer state.
+- `AVPlayer` remains a stable runtime object across reducer updates.
 - Detail -> Player navigation continues to work through `AppFeature`.
-- The Player screen still handles direct streams, subtitle cues, and fallback paths without regressing current playback UX.
+- Subtitle rendering, source switching, and progress persistence remain functional.
