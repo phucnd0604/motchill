@@ -3,8 +3,9 @@ package com.motchill.androidcompose.feature.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.motchill.androidcompose.core.storage.LikedMovieStore
-import com.motchill.androidcompose.core.storage.PlaybackPositionStore
+import com.motchill.androidcompose.core.supabase.LikedMovieStore
+import com.motchill.androidcompose.core.supabase.PlaybackPositionStore
+import com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot
 import com.motchill.androidcompose.data.repository.PhucTVRepository
 import com.motchill.androidcompose.domain.model.MovieCard
 import kotlinx.coroutines.launch
@@ -33,8 +34,12 @@ class DetailViewModel(
             )
             runCatching {
                 val detail = repository.loadDetail(slug)
-                val liked = detail.id > 0 && likedMovieStore.isLiked(detail.id)
-                val episodeProgressById = loadEpisodeProgress(detail.id, detail.episodes)
+                val liked = detail.id > 0 && runCatching {
+                    likedMovieStore.isLiked(detail.id)
+                }.getOrDefault(false)
+                val episodeProgressById = runCatching {
+                    loadEpisodeProgress(detail.id, detail.episodes)
+                }.getOrDefault(emptyMap())
                 _uiState.value = DetailUiState(
                     isLoading = false,
                     errorMessage = null,
@@ -64,50 +69,82 @@ class DetailViewModel(
         }
     }
 
+    fun refreshCloudState() {
+        val detail = _uiState.value.detail ?: return
+        if (detail.id == 0) return
+
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            val liked = runCatching {
+                likedMovieStore.isLiked(detail.id)
+            }.getOrNull()
+            val episodeProgressById = runCatching {
+                loadEpisodeProgress(detail.id, detail.episodes)
+            }.getOrNull()
+
+            if (liked == null && episodeProgressById == null) return@launch
+
+            _uiState.value = _uiState.value.copy(
+                isLiked = liked ?: currentState.isLiked,
+                episodeProgressById = episodeProgressById ?: currentState.episodeProgressById,
+            )
+        }
+    }
+
     fun toggleLike() {
         val detail = _uiState.value.detail ?: return
         if (detail.id == 0) return
 
         viewModelScope.launch {
-            likedMovieStore.toggleMovie(
-                MovieCard(
-                    id = detail.id,
-                    name = detail.title,
-                    otherName = detail.otherName,
-                    avatar = detail.avatar,
-                    bannerThumb = detail.bannerThumb,
-                    avatarThumb = detail.avatarThumb,
-                    description = detail.description,
-                    banner = detail.banner,
-                    imageIcon = "",
-                    link = detail.movie.link,
-                    quantity = detail.quality,
-                    rating = if (detail.ratePoint > 0) detail.ratePoint.toString() else "",
-                    year = detail.year,
-                    statusTitle = detail.statusTitle,
-                    statusRaw = detail.statusRaw,
-                    statusText = detail.statusText,
-                    director = detail.director,
-                    time = detail.time,
-                    trailer = detail.trailer,
-                    showTimes = detail.showTimes,
-                    moreInfo = detail.moreInfo,
-                    castString = detail.castString,
-                    episodesTotal = detail.episodesTotal,
-                    viewNumber = detail.viewNumber,
-                    ratePoint = detail.ratePoint,
-                    photoUrls = detail.photoUrls,
-                    previewPhotoUrls = detail.previewPhotoUrls,
-                ),
-            )
-            _uiState.value = _uiState.value.copy(isLiked = !_uiState.value.isLiked)
+            runCatching {
+                likedMovieStore.toggleMovie(
+                    MovieCard(
+                        id = detail.id,
+                        name = detail.title,
+                        otherName = detail.otherName,
+                        avatar = detail.avatar,
+                        bannerThumb = detail.bannerThumb,
+                        avatarThumb = detail.avatarThumb,
+                        description = detail.description,
+                        banner = detail.banner,
+                        imageIcon = "",
+                        link = detail.movie.link,
+                        quantity = detail.quality,
+                        rating = if (detail.ratePoint > 0) detail.ratePoint.toString() else "",
+                        year = detail.year,
+                        statusTitle = detail.statusTitle,
+                        statusRaw = detail.statusRaw,
+                        statusText = detail.statusText,
+                        director = detail.director,
+                        time = detail.time,
+                        trailer = detail.trailer,
+                        showTimes = detail.showTimes,
+                        moreInfo = detail.moreInfo,
+                        castString = detail.castString,
+                        episodesTotal = detail.episodesTotal,
+                        viewNumber = detail.viewNumber,
+                        ratePoint = detail.ratePoint,
+                        photoUrls = detail.photoUrls,
+                        previewPhotoUrls = detail.previewPhotoUrls,
+                    ),
+                )
+            }.onSuccess { updatedMovies ->
+                _uiState.value = _uiState.value.copy(
+                    isLiked = updatedMovies.any { it.id == detail.id },
+                    errorMessage = null,
+                )
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = error.message ?: error::class.java.simpleName,
+                )
+            }
         }
     }
 
     private suspend fun loadEpisodeProgress(
         movieId: Int,
         episodes: List<com.motchill.androidcompose.domain.model.MovieEpisode>,
-    ): Map<Int, com.motchill.androidcompose.core.storage.PlaybackProgressSnapshot> {
+    ): Map<Int, PlaybackProgressSnapshot> {
         return buildMap {
             episodes.forEach { episode ->
                 val snapshot = playbackPositionStore.load(movieId, episode.id) ?: return@forEach

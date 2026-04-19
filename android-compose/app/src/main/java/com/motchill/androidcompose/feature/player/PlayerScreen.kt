@@ -122,20 +122,8 @@ fun PlayerScreen(
             positionStore = PhucTVAppContainer.playbackPositionStore,
         )
     }
-    val syncCoordinator = remember { PhucTVAppContainer.syncCoordinator }
     val runtimeState by engine.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-
-    fun syncPlaybackProgress() {
-        coroutineScope.launch {
-            syncCoordinator.syncPlaybackProgress(
-                movieId = movieId,
-                episodeId = episodeId,
-                posMs = runtimeState.positionMs,
-                durMs = runtimeState.durationMs,
-            )
-        }
-    }
 
     PlayerSystemUiEffect(
         activity = activity,
@@ -149,7 +137,6 @@ fun PlayerScreen(
     val exitPlayer: () -> Unit = {
         coroutineScope.launch {
             engine.flushPosition()
-            syncPlaybackProgress()
             onBack()
         }
     }
@@ -173,7 +160,6 @@ fun PlayerScreen(
             engine.stopForExit()
             coroutineScope.launch {
                 engine.release()
-                syncPlaybackProgress()
             }
         }
     }
@@ -254,7 +240,6 @@ fun PlayerScreen(
                 onBack = onBack,
                 onSelectSource = { index ->
                     viewModel.selectSource(index)
-                    syncPlaybackProgress()
                 },
                 onSelectAudioTrack = { track ->
                     viewModel.selectAudioTrack(track)
@@ -282,14 +267,12 @@ fun PlayerScreen(
                 onTogglePlayback = {
                     if (runtimeState.isPlaying) {
                         engine.pause()
-                        syncPlaybackProgress()
                     } else {
                         engine.play()
                     }
                 },
                 onSeekTo = { positionMs ->
                     engine.seekTo(positionMs)
-                    syncPlaybackProgress()
                 },
             )
         }

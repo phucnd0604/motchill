@@ -10,8 +10,6 @@ import com.motchill.androidcompose.core.supabase.SupabasePlaybackPositionStore
 import com.motchill.androidcompose.core.supabase.SupabaseRestClient
 import com.motchill.androidcompose.core.supabase.SupabaseSessionStore
 import com.motchill.androidcompose.core.network.PhucTVApiClient
-import com.motchill.androidcompose.core.storage.LikedMovieStore
-import com.motchill.androidcompose.core.storage.PlaybackPositionStore
 import com.motchill.androidcompose.data.repository.DefaultPhucTVRepository
 import com.motchill.androidcompose.data.repository.PhucTVRepository
 
@@ -51,11 +49,11 @@ object PhucTVAppContainer {
         )
     }
 
-    val remoteLikedMovieStore: SupabaseLikedMovieStore by lazy {
+    val likedMovieStore: SupabaseLikedMovieStore by lazy {
         SupabaseLikedMovieStore(supabaseRestClient, authManager)
     }
 
-    val remotePlaybackPositionStore: SupabasePlaybackPositionStore by lazy {
+    val playbackPositionStore: SupabasePlaybackPositionStore by lazy {
         SupabasePlaybackPositionStore(supabaseRestClient, authManager)
     }
 
@@ -63,30 +61,9 @@ object PhucTVAppContainer {
         DefaultPhucTVRepository(apiClient)
     }
 
-    val likedMovieStore: LikedMovieStore by lazy {
-        checkInitialized()
-        LikedMovieStore(
-            context = appContext,
-            authSessionProvider = authManager,
-            remoteStore = remoteLikedMovieStore,
-        )
-    }
-
-    val playbackPositionStore: PlaybackPositionStore by lazy {
-        checkInitialized()
-        PlaybackPositionStore(
-            context = appContext,
-            authSessionProvider = authManager,
-            remoteStore = remotePlaybackPositionStore,
-        )
-    }
-
     val syncCoordinator: DefaultSyncCoordinator by lazy {
         DefaultSyncCoordinator(
-            localLikedMovieStore = likedMovieStore,
-            remoteLikedMovieStore = remoteLikedMovieStore,
-            localPlaybackStore = playbackPositionStore,
-            remotePlaybackStore = remotePlaybackPositionStore,
+            remotePlaybackStore = playbackPositionStore,
         ).also { authManager.attachSyncCoordinator(it) }
     }
 

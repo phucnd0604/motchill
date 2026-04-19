@@ -13,7 +13,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MergingMediaSource
-import com.motchill.androidcompose.core.storage.PlaybackPositionStore
+import com.motchill.androidcompose.core.supabase.PlaybackPositionStore
 import com.motchill.androidcompose.domain.model.PlaySource
 import com.motchill.androidcompose.domain.model.PlayTrack
 import kotlinx.coroutines.CoroutineScope

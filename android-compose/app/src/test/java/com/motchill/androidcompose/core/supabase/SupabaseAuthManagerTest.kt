@@ -10,6 +10,8 @@ import org.junit.After
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 import java.util.concurrent.Executors
+import io.github.jan.supabase.auth.MemorySessionManager
+import io.github.jan.supabase.auth.MemoryCodeVerifierCache
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SupabaseAuthManagerTest {
@@ -50,7 +52,13 @@ class SupabaseAuthManagerTest {
 
     private class RecordingNetworkClient : SupabaseNetworkClient {
         override val supabaseClient: io.github.jan.supabase.SupabaseClient = io.github.jan.supabase.createSupabaseClient("https://dummy.com", "dummy") {
-            install(io.github.jan.supabase.auth.Auth)
+            install(io.github.jan.supabase.auth.Auth) {
+                sessionManager = MemorySessionManager()
+                codeVerifierCache = MemoryCodeVerifierCache()
+                autoLoadFromStorage = false
+                autoSaveToStorage = false
+                enableLifecycleCallbacks = false
+            }
         }
         var sendOtpThreadName: String = ""
 

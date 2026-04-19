@@ -37,7 +37,7 @@ fun DetailScreen(
     DisposableEffect(lifecycleOwner, detailViewModel) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                detailViewModel.refreshEpisodeProgress()
+                detailViewModel.refreshCloudState()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

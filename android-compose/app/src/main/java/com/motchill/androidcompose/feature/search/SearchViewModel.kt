@@ -3,7 +3,7 @@ package com.motchill.androidcompose.feature.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.motchill.androidcompose.core.storage.LikedMovieStore
+import com.motchill.androidcompose.core.supabase.LikedMovieStore
 import com.motchill.androidcompose.data.repository.PhucTVRepository
 import com.motchill.androidcompose.domain.model.SearchChoice
 import com.motchill.androidcompose.domain.model.SearchFacetOption
@@ -37,6 +37,16 @@ internal class SearchViewModel(
 
     fun refresh() {
         loadPage(_uiState.value.pageNumber)
+    }
+
+    fun refreshLikedMovies() {
+        viewModelScope.launch {
+            runCatching {
+                likedMovieStore.loadMovies()
+            }.onSuccess { movies ->
+                _uiState.value = _uiState.value.withLikedMovies(movies)
+            }
+        }
     }
 
     fun onSearchTextChanged(value: String) {
@@ -99,7 +109,6 @@ internal class SearchViewModel(
 
     fun toggleLikedOnly() {
         _uiState.value = _uiState.value.toggleLikedOnly()
-        // Flutter keeps the local liked list as the source of truth and does not refetch here.
     }
 
     fun clearCategory() {
@@ -152,9 +161,9 @@ internal class SearchViewModel(
             runCatching {
                 coroutineScope {
                     val filtersDeferred = async { repository.loadSearchFilters() }
-                    val likedDeferred = async { likedMovieStore.loadMovies() }
                     val filters = filtersDeferred.await()
-                    val likedMovies = likedDeferred.await()
+                    val likedMovies = runCatching { likedMovieStore.loadMovies() }
+                        .getOrElse { emptyList() }
                     val preset = filters.findPreset(initialSlug)
                     _uiState.value = _uiState.value
                         .withLoadedFilters(filters)
